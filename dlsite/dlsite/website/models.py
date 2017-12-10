@@ -9,6 +9,9 @@ class Image(models.Model):
     fc7_title = models.CharField(max_length=100)
     fc8_title = models.CharField(max_length=100)
 
+    def __unicode__(self):
+        return '%s' % (self.title)
+
     def __str__(self):
         return self.title, self.fc7_title, self.fc8_title
 

@@ -7,6 +7,7 @@ from django.shortcuts import render
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from serializers import UserSerializer, GroupSerializer
+from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, ImageCluster
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -23,3 +24,9 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+
+
+def get_images(request):
+    images_list = Image.objects.all()
+    context = {'images_list': images_list, 'count': len(images_list)}
+    return render(request, 'main.html', context)
