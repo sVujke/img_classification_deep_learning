@@ -23,24 +23,24 @@ export default class SearchBar extends Component {
         return (
             <Paper>
                 <Grid 
-                container 
-                direction='row' 
-                justify='flex-start' 
-                alignItems='center' 
-                spasing={2}
-                style={searchBarDefaultStyles.gridContainer}>
-                    <Grid item xs={9} style={{padding:0}}>
-                        <TextField
-                            style={searchBarDefaultStyles.searchTextField}
-                            placeholder={SEARCH_TEXT_FIELD_PALCEHOLDER_TEXT}
-                            onKeyDown={event => this.handleOnKeyDown(event)}
-                        />
-                    </Grid>
-                    <Grid item xs={3} style={{padding:0}}>
-                        <ButtonBase style={searchBarDefaultStyles.searchButton} onClick={event => this.props.onClick(event)}>
-                            <SearchIcon />
-                        </ButtonBase>
-                    </Grid>
+                    container 
+                    direction='row' 
+                    justify='space-between' 
+                    alignItems='center' 
+                    spasing={2}
+                    style={searchBarDefaultStyles.gridContainer}>
+                        <Grid item>
+                            <TextField
+                                style={searchBarDefaultStyles.searchTextField}
+                                placeholder={SEARCH_TEXT_FIELD_PALCEHOLDER_TEXT}
+                                onKeyDown={event => this.handleOnKeyDown(event)}
+                            />
+                        </Grid>
+                        <Grid item>
+                            <ButtonBase style={searchBarDefaultStyles.searchButton} onClick={event => this.props.onClick(event)}>
+                                <SearchIcon />
+                            </ButtonBase>
+                        </Grid>
                 </Grid>
             </Paper>
         );
@@ -58,12 +58,11 @@ const searchBarDefaultStyles = {
         width: '100%'
     },
     searchTextField: {
-        padding: 0,
         margin: 'none',
         width: '100%'
     },
     searchButton: {
-        color: 'black',
-        padding: 0
+        color: 'rgb(66,133,244)',
+        
     }
 }
