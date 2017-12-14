@@ -1,27 +1,31 @@
 import React, { Component } from 'react';
 import { GridList, GridListTile } from 'material-ui/GridList';
-import { Grid } from 'material-ui';
 
 import PropTypes from 'prop-types';
 import withSizes from 'react-sizes';
 
-const COLUMN_WIDTH = 180;
+const CELL_SIZE = 180;
 
 
 class ImageGrid extends Component {
 
     render() {
         return (
-            <GridList cols={this.props.calculatedColumnNum}>
-                {this.props.imageData.map(tile => (
-                    <GridListTile key={tile}>
-                        <div>
-                            <img src={require(`../mlimages/${tile}`)} 
-                            style={imageGridDefaultStyles.imageStyle} />
-                        </div>
-                    </GridListTile>
-                ))}
-            </GridList>
+            <div style={this.props.style || {}}>
+                <GridList cols={this.props.calculatedColumnNum} cellHeight={CELL_SIZE}>
+                    {this.props.imageData.map(tile => (
+                        <GridListTile key={tile}>
+                            <div>
+                                <img 
+                                    src={require(`../mlimages/${tile}`)} 
+                                    style={imageGridDefaultStyles.imageStyle} 
+                                    alt={tile}
+                                />
+                            </div>
+                        </GridListTile>
+                    ))}
+                </GridList>
+            </div>
         );
         /*return (
             <Grid container direction='row' justify='flex-start' alignItems='center'>
@@ -50,11 +54,12 @@ const imageGridDefaultStyles = {
 }
 
 ImageGrid.propTypes={
-    imageData: PropTypes.array.isRequired
+    imageData: PropTypes.array.isRequired,
+    style: PropTypes.object
 }
 
 
 const mapSizesToProps = ({ width }) => ({
-    calculatedColumnNum: Math.floor(width / COLUMN_WIDTH),
+    calculatedColumnNum: Math.ceil(width / CELL_SIZE),
 });
 export default withSizes(mapSizesToProps)(ImageGrid);
