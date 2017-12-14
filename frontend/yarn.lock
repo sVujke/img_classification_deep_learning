@@ -2311,7 +2311,7 @@ eslint-plugin-react@7.4.0:
     jsx-ast-utils "^2.0.0"
     prop-types "^15.5.10"
 
-eslint-plugin-react@^7.5.1:
+eslint-plugin-react@7.5.1:
   version "7.5.1"
   resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.5.1.tgz#52e56e8d80c810de158859ef07b880d2f56ee30b"
   dependencies:
@@ -4492,6 +4492,10 @@ lodash.templatesettings@^4.0.0:
   dependencies:
     lodash._reinterpolate "~3.0.0"
 
+lodash.throttle@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/lodash.throttle/-/lodash.throttle-4.1.1.tgz#c23e91b710242ac70c37f1e1cda9274cc39bf2f4"
+
 lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
@@ -5905,6 +5909,12 @@ react-scrollbar-size@^2.0.2:
     babel-runtime "^6.23.0"
     prop-types "^15.5.10"
     react-event-listener "^0.5.0"
+
+react-sizes@^0.4.3:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/react-sizes/-/react-sizes-0.4.3.tgz#a48f2788a9499ecd51868d989b2e5752796a40a1"
+  dependencies:
+    lodash.throttle "^4.1.1"
 
 react-test-renderer@16.2.0:
   version "16.2.0"

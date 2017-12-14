@@ -3,11 +3,21 @@ import SearchBar from './components/SearchBar';
 import ImageGrid from './components/ImageGrid';
 
 class App extends Component {
+
+  
+
   render() {
+  
+    var imagedata = [];
+    for(var i = 0; i< 41; i++) { 
+      var str = i >= 10 ? '0000' : '00000';
+      imagedata.push(`${str}${i}.jpg`)
+    }
+
     return (
       <div className="App" style={appStyle}>
         <SearchBar onClick={() => console.log('search tapped')}/>
-        <ImageGrid imageData={[1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1]}/>
+        <ImageGrid imageData={imagedata}/>
       </div>
     );
   }
