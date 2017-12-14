@@ -17,7 +17,7 @@ class App extends Component {
     return (
       <div className="App" style={appStyle}>
         <SearchBar onClick={() => console.log('search tapped')}/>
-        <ImageGrid imageData={imagedata}/>
+        <ImageGrid imageData={imagedata} style={{ marginTop: 8 }}/>
       </div>
     );
   }
