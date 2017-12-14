@@ -3,7 +3,7 @@ import {Grid, TextField, ButtonBase, Paper } from 'material-ui';
 import SearchIcon from 'material-ui-icons/Search';
 import PropTypes from 'prop-types';
 
-const SEARCH_TEXT_FIELD_PALCEHOLDER_TEXT = 'Search...';
+const SEARCH_TEXT_FIELD_PALCEHOLDER_TEXT = 'Search';
 
 export default class SearchBar extends Component {
     
@@ -21,8 +21,8 @@ export default class SearchBar extends Component {
 
     render () {
         return (
-            <Paper elevation={2}>
-                <div style={searchBarDefaultStyles.gridContainer}>
+            <Paper elevation={2} style={searchBarDefaultStyles.paper}>
+                <div style={searchBarDefaultStyles.container}>
                     <div style={searchBarDefaultStyles.searchTextFieldContainer}>
                         <TextField
                             autoFocus
@@ -58,7 +58,10 @@ SearchBar.propTypes={
 }
 
 const searchBarDefaultStyles = {
-    gridContainer: {
+    paper: {
+        
+    },
+    container: {
         padding: 4,
         margin: 0,
         width: '100%',

@@ -16,14 +16,14 @@ class App extends Component {
 
     return (
       <div className="App" style={appStyle}>
-        <SearchBar onClick={() => console.log('search tapped')}/>
-        <ImageGrid imageData={imagedata} style={{ marginTop: 8 }}/>
+        <SearchBar onClick={() => console.log('search tapped')} />
+        <ImageGrid imageData={imagedata} style={{ marginTop: 48 }}/>
       </div>
     );
   }
 }
 const appStyle = {
   padding: 0,
-  margin: 4
+  margin: 12
 }
 export default App;
