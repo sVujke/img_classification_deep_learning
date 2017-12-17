@@ -1,5 +1,6 @@
 {
   "name": "frontend",
+  "homepage": "141.26.209.68",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

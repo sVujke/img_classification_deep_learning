@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Grid, TextField, ButtonBase, Paper } from 'material-ui';
+import { TextField, ButtonBase, Paper } from 'material-ui';
 import SearchIcon from 'material-ui-icons/Search';
 import PropTypes from 'prop-types';
 

@@ -1,0 +1,2 @@
+export const SELECT_IMAGE = 'SELECT_IMAGE';
+export const DESELECT_IMAGE = 'DESELECT_IMAGE';
