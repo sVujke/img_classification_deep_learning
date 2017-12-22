@@ -1,8 +1,9 @@
 import { combineReducers } from 'redux'
-import apiRequestsReducer from './apiRequestsReducer'
 import imagesReducer from './imagesReducer'
+import searchReducer from './searchReducer'
+
 
 export default combineReducers({
-    apiRequestsReducer,
-    imagesReducer
+    imagesReducer,
+    //searchReducer
 })

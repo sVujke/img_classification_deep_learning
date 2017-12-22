@@ -3,8 +3,8 @@ import SearchBar from './components/SearchBar';
 import ImageGrid from './components/ImageGrid';
 import { Button } from 'material-ui'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
-import * as selectImagesActions from './redux/actions/selectImagesActions'
+import * as imagesActions from './redux/actions/imagesActions'
+import { compose } from './utils/compose'
 
 class App extends Component {
 
@@ -22,7 +22,7 @@ class App extends Component {
 
     return (
       <div className="App" style={appStyles.app}>
-        <SearchBar onClick={() => console.log('search tapped')} />
+        <SearchBar onClick={() => this.props.getImages('LMAO')} />
         <ImageGrid imageData={imagedata} style={appStyles.imageGrid}/>
         <Button raised style={appStyles.submitButton} onClick={event => this.onSubmitClicked(event)}>Submit</Button>
       </div>
@@ -51,13 +51,22 @@ const appStyles = {
 function mapStateToProps(state) {
   return {
     images: state.images,
-    selectedImages: state.selectedImages
+    selectedImages: state.selectedImages,
+    step: state.step,
+    fetching: state.fetching
   }
 }
 
 function mapDispatchToProps(dispatch) {
+  const {
+    getImages,
+    getImagesSuccess,
+    getImagesFailure
+  } = imagesActions;
   return {
-    selectImagesActions: bindActionCreators(selectImagesActions, dispatch)
+    getImages: compose(dispatch, getImages),
+    getImagesSuccess: compose(dispatch, getImagesSuccess),
+    getImagesFailure: compose(dispatch, getImagesFailure)
   }
 }
 
