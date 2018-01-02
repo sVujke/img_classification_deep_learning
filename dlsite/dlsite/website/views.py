@@ -40,21 +40,21 @@ def keyword_exists(k):
     return True
 
 
-def return_random(q):
-    """Return Response with random images
+def send_random(q):
+    """Return dict with random images
 
     :param q: query string
-    :return: JSONResponse
+    :return: dict
     """
     step = 0
     images = get_images()
     print(images)
 
-    return Response({
+    return {
         "step": step,
         "query": q,
         "images": images
-    })
+    }
 
 
 class SearchView(APIView):
@@ -64,20 +64,23 @@ class SearchView(APIView):
 
         if url_name == 'search':
             print("GET", request.GET)
-            query = request.GET.get('q')
-            query = query.lower().strip()
-            print("Search for", query)
-            if len(query) == 0:
+            query = request.GET.get('query')
+            if not query or len(query) == 0:
                 return Response()
 
+            query = query.lower().strip()
+            print("Search for", query)
+
             if keyword_exists(query):
+                # TODO: return normal results
                 print("Keyword exists")
                 return Response({"query": query})
 
             else:
+                print("Send random")
                 Keyword(keyword=query).save()
-                return return_random(query)
-            
+                return Response(send_random(query))
+
         else:
             pass
 

@@ -1,23 +1,24 @@
+{% load render_bundle from webpack_loader %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{% block title %}Main page{% endblock %}</title>
-</head>
-<body>
-{% block content %}
-<form action="search">
-    <input name="query" placeholder="Search"/>
-    <input type="submit">
-</form>
+    <head>
+        <meta charset="utf-8">
+        <title>{% block title %}Main page{% endblock %}</title>
+    </head>
+    <body>
+        <div id="root"></div>
+        {% render_bundle "main" %}
 
-<h3>Search results: {{ images_list|length }}</h3>
-
-{% for image in images_list %}
-<img src="static/{{ image.title }}" alt="img" style="width: 200px;float:left"/>
-{% endfor %}
-
-{% endblock %}
-</body>
+        {% block content %}
+        <form action="search">
+            <input name="query" placeholder="Search"/>
+            <input type="submit">
+        </form>
+        <h3>Search results: {{ images_list|length }}</h3>
+        {% for image in images_list %}
+            <img src="static/{{ image.title }}" alt="img" style="width: 200px;float:left"/>
+        {% endfor %}
+        {% endblock %}
+    </body>
 </html>
 
