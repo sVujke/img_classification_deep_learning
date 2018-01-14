@@ -18,9 +18,9 @@ export function* requestImages(action) {
             api.getImages,
             action.payload.query
         );
+        console.log(result)
         if (result.ok) {
-            
-            yield put(getImagesSuccess());
+            yield put(getImagesSuccess(result.images, result.step));
         }
         else {
             yield put(getImagesFailure(result.status));

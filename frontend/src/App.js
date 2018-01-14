@@ -3,13 +3,24 @@ import SearchBar from './components/SearchBar';
 import ImageGrid from './components/ImageGrid';
 import { Button } from 'material-ui'
 import { connect } from 'react-redux'
-import * as imagesActions from './redux/actions/imagesActions'
+import * as imagesActions from './redux/actions/imagesActions';
+import * as searchActions from './redux/actions/searchActions';
+
 import { compose } from './utils/compose'
 
 class App extends Component {
 
   onSubmitClicked = (event) => {
     console.log('Submit clicked')
+  }
+
+  onSearchClick = (event) => {
+    this.props.getImages('LMAO');
+    this.props.searchPressed();
+  }
+
+  onSearchTextChange = (value) => {
+    this.props.searchTextChanged(value);
   }
 
   render() {
@@ -22,7 +33,11 @@ class App extends Component {
 
     return (
       <div className="App" style={appStyles.app}>
-        <SearchBar onClick={() => this.props.getImages('LMAO')} />
+        <SearchBar 
+          value={this.props.currentSearchText}
+          onClick={event => this.onSearchClick(event)} 
+          onChange={(value) => this.onSearchTextChange(value)}
+        />
         <ImageGrid imageData={imagedata} style={appStyles.imageGrid}/>
         <Button raised style={appStyles.submitButton} onClick={event => this.onSubmitClicked(event)}>Submit</Button>
       </div>
@@ -53,7 +68,8 @@ function mapStateToProps(state) {
     images: state.images,
     selectedImages: state.selectedImages,
     step: state.step,
-    fetching: state.fetching
+    fetching: state.fetching,
+    currentSearchText: state.currentSearchText
   }
 }
 
@@ -63,10 +79,16 @@ function mapDispatchToProps(dispatch) {
     getImagesSuccess,
     getImagesFailure
   } = imagesActions;
+  const {
+    searchTextChanged,
+    searchPressed
+  } = searchActions;
   return {
     getImages: compose(dispatch, getImages),
     getImagesSuccess: compose(dispatch, getImagesSuccess),
-    getImagesFailure: compose(dispatch, getImagesFailure)
+    getImagesFailure: compose(dispatch, getImagesFailure),
+    searchTextChanged: compose(dispatch, searchTextChanged),
+    searchPressed: compose(dispatch, searchPressed),
   }
 }
 

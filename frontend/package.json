@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "axios": "0.17.1",
+    "immutable": "3.8.2",
     "material-ui": "1.0.0-beta.22",
     "material-ui-icons": "1.0.0-beta.17",
     "prop-types": "15.6.0",

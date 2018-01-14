@@ -19,6 +19,10 @@ export default class SearchBar extends Component {
         }
     }
 
+    handleOnChange = (event) => {
+        this.props.onChange(event.target.value);
+    }
+
     render () {
         return (
             <Paper elevation={2} style={searchBarDefaultStyles.paper}>
@@ -28,7 +32,9 @@ export default class SearchBar extends Component {
                             autoFocus
                             fullWidth
                             placeholder={SEARCH_TEXT_FIELD_PALCEHOLDER_TEXT}
+                            value={this.props.searchTextValue}
                             onKeyDown={event => this.handleOnKeyDown(event)}
+                            onChange={event => this.handleOnChange(event)}
                             InputProps={{
                                 disableUnderline: true,
                             }}
@@ -54,7 +60,9 @@ export default class SearchBar extends Component {
 }
 
 SearchBar.propTypes={
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
+    onChange: PropTypes.func,
+    searchTextValue: PropTypes.string
 }
 
 const searchBarDefaultStyles = {

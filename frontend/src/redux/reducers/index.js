@@ -5,5 +5,5 @@ import searchReducer from './searchReducer'
 
 export default combineReducers({
     imagesReducer,
-    //searchReducer
+    searchReducer
 })
