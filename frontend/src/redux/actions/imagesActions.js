@@ -30,6 +30,7 @@ export function getImagesFailure() {
     }
 }
 
+
 export function selectImage(name) {
     return {
         type: SELECT_IMAGE,
@@ -37,10 +38,21 @@ export function selectImage(name) {
             name
         }
     }
-
 }
 
 
-export function postFeedback(query) {
-
+export function postFeedback() {
+    return {
+        type: POST_FEEDBACK_REQUEST
+    }
+}
+export function postFeedbackSuccess() {
+    return {
+        type: POST_FEEDBACK_SUCCESS
+    }
+}
+export function postFeedbackFailure() {
+    return {
+        type: POST_FEEDBACK_FAILURE
+    }
 }

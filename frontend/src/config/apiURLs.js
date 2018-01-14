@@ -1,5 +1,5 @@
 export const ApiURLs = {
-    host: 'https://api.research-lab-server.com/'
+    host: 'https://141.26.209.68/'
 };
 
 export const ApiMethods = {

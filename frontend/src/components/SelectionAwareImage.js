@@ -7,29 +7,40 @@ export default class ImageGrid extends Component {
 
     render() {
         return (
-            <div>
+            <div style={selectionAwareImageDefaultStyles.containerStyle}>
                 <img
-                    src={this.props.imageSrc}
+                    src={require(`../mlimages/${this.props.imageSrc}`)}
                     alt={this.props.alt}
-                    style={this.props.style}
+                    style={selectionAwareImageDefaultStyles.imageStyle} 
                 />
                 {this.props.selected ? <CheckCircle style={selectionAwareImageDefaultStyles.checkmarkStyle}/> : null} 
             </div>
+
         );
     }
 }
 
 const selectionAwareImageDefaultStyles = {
+    containerStyle: {
+        width: '100%',
+        height: '100%'
+    },
     checkmarkStyle: {
         color: 'green',
         zIndex: 100,
-        position: 'relative',
+        position: 'absolute',
         backgroundColor: 'white',
         borderRadius: 20,
-        float: 'right',
-        right: 10
+        right: 10,
+        top: 10
     },
-
+    imageStyle: {
+        maxWidth: '100%',
+        maxHeight: '100%',
+        margin: 'auto',
+        display: 'block',
+        objectFit: 'contain'
+    }
 }
 
 ImageGrid.propTypes = {

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import SearchBar from './components/SearchBar';
 import ImageGrid from './components/ImageGrid';
-import { Button } from 'material-ui'
+import { Button, Typography, CircularProgress } from 'material-ui'
 import { connect } from 'react-redux'
 import * as imagesActions from './redux/actions/imagesActions';
 import * as searchActions from './redux/actions/searchActions';
@@ -11,12 +11,16 @@ import { compose } from './utils/compose'
 class App extends Component {
 
   onSubmitClicked = (event) => {
-    console.log('Submit clicked')
+    if(this.props.posting) return;
+    this.props.postFeedback();
   }
 
   onSearchClick = (event) => {
-    this.props.searchPressed();
-    this.props.getImages(this.props.currentSearchText);
+    if (this.props.fetching) return;
+    if (this.props.currentSearchText) {
+      this.props.searchPressed();
+      this.props.getImages(this.props.currentSearchText);
+    }
   }
 
   onSearchTextChange = (value) => {
@@ -27,12 +31,56 @@ class App extends Component {
     this.props.selectImage(name);
   }
 
+
+
   render() {
   
-    var imagedata = [];
-    for(var i = 0; i< 41; i++) { 
-      var str = i >= 10 ? '0000' : '00000';
-      imagedata.push(`${str}${i}.jpg`)
+    // var imagedata = [];
+    // for(var i = 0; i< 41; i++) { 
+    //   var str = i >= 10 ? '0000' : '00000';
+    //   imagedata.push(`${str}${i}.jpg`)
+    // }
+
+    const middleComponent = () => {
+      if (this.props.fetching || this.props.posting){
+        return(
+          <div style={appStyles.progressContainer}>
+            <CircularProgress thickness={3} size={150} style={appStyles.progress} />
+          </div>
+        );
+      }
+      else {
+        if (this.props.images) {
+          return (
+            <div>
+              <ImageGrid 
+                imagesSrcs={this.props.images} 
+                selectedImagesSrcs={this.props.selectedImages} 
+                style={appStyles.imageGrid} 
+                onClickElement={name => this.onSelectImage(name)} 
+              />
+              <Button 
+                raised 
+                style={appStyles.submitButton} 
+                onClick={event => this.onSubmitClicked(event)}>
+                  Submit
+              </Button>
+            </div>
+          );
+        } else {
+          if(this.props.posted) {
+            return (
+              <div style={appStyles.progressContainer}>
+                <Typography style={appStyles.successText}>
+                  Feedback was successfully posted!
+                </Typography>
+              </div>
+            );
+          } else {
+            return null;
+          }
+        }
+      }
     }
 
     return (
@@ -42,8 +90,7 @@ class App extends Component {
           onClick={event => this.onSearchClick(event)} 
           onChange={value => this.onSearchTextChange(value)}
         />
-        <ImageGrid imagesSrcs={imagedata} selectedImagesSrcs={this.props.selectedImages} style={appStyles.imageGrid} onClickElement={name => this.onSelectImage(name)} />
-        <Button raised style={appStyles.submitButton} onClick={event => this.onSubmitClicked(event)}>Submit</Button>
+        {middleComponent()}
       </div>
     );
   }
@@ -64,7 +111,28 @@ const appStyles = {
     display: 'block', 
     backgroundColor: 'rgb(66,133,244)',
     color: 'white'
-    }
+  },
+  successText: {
+    fontSize: 25,
+    textAlign: 'center',
+    color: 'rgb(66,133,244)'
+  },
+  progressContainer: {
+    width: '100%',
+    height: '100%',
+    margin: 'auto',
+    display: 'flex',
+    justifyContent: 'center',
+    position: 'absolute',
+    alignItems: 'center',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
+  },
+  progress: {
+    color: 'rgb(66,133,244)',
+  }
 }
 
 function mapStateToProps(state) {
@@ -74,6 +142,8 @@ function mapStateToProps(state) {
     selectedImages: state.imagesReducer.selectedImages,
     step: state.imagesReducer.step,
     fetching: state.imagesReducer.fetching,
+    posted: state.imagesReducer.posted,
+    posting: state.imagesReducer.posting,
     currentSearchText: state.searchReducer.currentSearchText
   }
 }
@@ -83,7 +153,8 @@ function mapDispatchToProps(dispatch) {
     getImages,
     getImagesSuccess,
     getImagesFailure,
-    selectImage
+    selectImage,
+    postFeedback
   } = imagesActions;
   const {
     searchTextChanged,
@@ -94,6 +165,7 @@ function mapDispatchToProps(dispatch) {
     getImagesSuccess: compose(dispatch, getImagesSuccess),
     getImagesFailure: compose(dispatch, getImagesFailure),
     selectImage: compose(dispatch, selectImage),
+    postFeedback: compose(dispatch, postFeedback),
     searchTextChanged: compose(dispatch, searchTextChanged),
     searchPressed: compose(dispatch, searchPressed),
   }

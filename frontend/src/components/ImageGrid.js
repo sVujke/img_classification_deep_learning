@@ -21,17 +21,15 @@ class ImageGrid extends Component {
             <div style={this.props.style || {}}>
                 <GridList cols={this.props.calculatedColumnNum} cellHeight={CELL_SIZE}>
                     {this.props.imagesSrcs.map(tile => (
-                        <GridListTile 
+                        <GridListTile
+                        style={{padding: 2}}
                             key={tile} 
                             onClick={this.props.onClickElement ? () => {this.props.onClickElement(tile); this.forceUpdate()} : () => {}}>
-                                <div>
-                                    <SelectionAwareImage 
-                                        imageSrc={require(`../mlimages/${tile}`)} 
-                                        style={imageGridDefaultStyles.imageStyle} 
-                                        alt={tile}
-                                        selected={this.checkSelection(tile)}
-                                    />
-                                </div>
+                                <SelectionAwareImage 
+                                    imageSrc={tile} 
+                                    alt={tile}
+                                    selected={this.checkSelection(tile)}
+                                />
                         </GridListTile>
                     ))}
                 </GridList>
@@ -48,20 +46,6 @@ class ImageGrid extends Component {
             </Grid>
         );*/
     }
-}
-
-const imageGridDefaultStyles = {
-    imageStyle: {
-        maxWidth: '100%',
-        maxHeight: '100%',
-        position: 'absolute',
-        margin: 'auto',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0
-    },
-
 }
 
 ImageGrid.propTypes={

@@ -13,8 +13,7 @@ export function getImages(query) {
     );   
 }
 
-export function postFeedback (query) {
+export function postFeedback (data) {
     const url = ApiURLs.host + ApiMethods.feedback;
-    var data = { lol: 123}
     return axios.post(url, data);
 }

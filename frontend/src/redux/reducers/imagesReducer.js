@@ -10,9 +10,11 @@ import {
 
 const initialState = {
     images: null,
-    selectedImages: [],
+    selectedImages: null,
     step: null,
-    fetching: false
+    fetching: false,
+    posting: false,
+    posted: false
 }
 
 export default function (state = initialState, action) {
@@ -37,13 +39,16 @@ export default function (state = initialState, action) {
 
 
         case POST_FEEDBACK_REQUEST:
-            return state;
+            return { ...state, posting: true};
 
         case POST_FEEDBACK_SUCCESS:
-            return state;
+            {
+                const newState = initialState;
+                return { ...newState, posted: true };
+            }
 
         case POST_FEEDBACK_FAILURE:
-            return state;
+            return { ...state, posting: false };
 
         default:
             return state;

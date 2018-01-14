@@ -1,18 +1,20 @@
-import { call, put, takeEvery } from 'redux-saga/effects';
+import { call, put, takeEvery, select } from 'redux-saga/effects';
 
 import * as api from '../../api/imagesApi';
 import {
     getImagesSuccess,
-    getImagesFailure
+    getImagesFailure,
+    postFeedbackSuccess,
+    postFeedbackFailure
 } from '../actions/imagesActions';
 
 import {
-    GET_IMAGES_REQUEST
+    GET_IMAGES_REQUEST, POST_FEEDBACK_REQUEST
 } from '../constants/imagesConstants';
 
-//import { fetchingSelector } from '../reducers/selectors'
+import { activeSearchSelector, stepSelector, selectedImagesSelector, imagesSelector } from '../reducers/selectors';
+
 export function* requestImages(action) {
-    //const isFetching = yield select(fetchingSelector);
     try {
         const result = yield call(
             api.getImages,
@@ -29,6 +31,37 @@ export function* requestImages(action) {
     }
 }
 
+export function* postFeedback() {
+
+    const selectedImages = yield select(selectedImagesSelector);
+    const images = yield select(imagesSelector);
+    var nonSelectedImages = images.filter(function (item) {
+        return selectedImages.indexOf(item) === -1;
+    });
+    const data = {
+        query: yield select(activeSearchSelector),
+        step: yield select(stepSelector),
+        selectedImages,
+        nonSelectedImages
+    }
+
+    try {
+        const result = yield call(
+            api.postFeedback,
+            data
+        );
+        if (result.ok) {
+            yield put(postFeedbackSuccess());
+        }
+        else {
+            yield put(postFeedbackFailure());
+        }
+    } catch (e) {
+        yield put(postFeedbackFailure());
+    }
+}
+
 export default function* root() {
     yield takeEvery(GET_IMAGES_REQUEST, requestImages);
+    yield takeEvery(POST_FEEDBACK_REQUEST, postFeedback);
 }
