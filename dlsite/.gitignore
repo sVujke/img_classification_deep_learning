@@ -2,3 +2,4 @@
 *.txt
 *.jpg
 .idea/*
+node_modules/*
