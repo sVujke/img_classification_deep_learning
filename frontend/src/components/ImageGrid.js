@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { GridList, GridListTile } from 'material-ui/GridList';
-
+import SelectionAwareImage from './SelectionAwareImage';
 import PropTypes from 'prop-types';
 import withSizes from 'react-sizes';
 
@@ -9,19 +9,27 @@ const CELL_SIZE = 180;
 
 class ImageGrid extends Component {
 
+    checkSelection (tile) {
+        var i = this.props.selectedImagesSrcs.indexOf(tile);
+        var selected = false;
+        if (i !== -1) selected = true;
+        return selected;
+    }
+
     render() {
         return (
             <div style={this.props.style || {}}>
                 <GridList cols={this.props.calculatedColumnNum} cellHeight={CELL_SIZE}>
-                    {this.props.imageData.map(tile => (
-                        <GridListTile key={tile}>
-                            <div>
-                                <img 
-                                    src={require(`../mlimages/${tile}`)} 
-                                    style={imageGridDefaultStyles.imageStyle} 
+                    {this.props.imagesSrcs.map(tile => (
+                        <GridListTile
+                        style={{padding: 2}}
+                            key={tile} 
+                            onClick={this.props.onClickElement ? () => {this.props.onClickElement(tile); this.forceUpdate()} : () => {}}>
+                                <SelectionAwareImage 
+                                    imageSrc={tile} 
                                     alt={tile}
+                                    selected={this.checkSelection(tile)}
                                 />
-                            </div>
                         </GridListTile>
                     ))}
                 </GridList>
@@ -40,22 +48,12 @@ class ImageGrid extends Component {
     }
 }
 
-const imageGridDefaultStyles = {
-    imageStyle: {
-        maxWidth: '100%',
-        maxHeight: '100%',
-        position: 'absolute',
-        margin: 'auto',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0
-    }
-}
-
 ImageGrid.propTypes={
-    imageData: PropTypes.array.isRequired,
-    style: PropTypes.object
+    imagesSrcs: PropTypes.array.isRequired,
+    selectedImagesSrcs: PropTypes.array.isRequired,
+    style: PropTypes.object,
+    onClickElement: PropTypes.func,
+
 }
 
 

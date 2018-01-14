@@ -1,0 +1,1 @@
+export const compose = (...fns) => (...args) => fns.reduceRight((agg, cur) => [cur.apply(this, agg)], args)[0];
