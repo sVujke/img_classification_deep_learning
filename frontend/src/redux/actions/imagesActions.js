@@ -1,6 +1,5 @@
 import { 
     SELECT_IMAGE, 
-    DESELECT_IMAGE,
     GET_IMAGES_REQUEST,
     GET_IMAGES_SUCCESS,
     GET_IMAGES_FAILURE,
@@ -31,22 +30,16 @@ export function getImagesFailure() {
     }
 }
 
-export function selectImage() {
-
+export function selectImage(name) {
     return {
-        type: SELECT_IMAGE
+        type: SELECT_IMAGE,
+        payload: {
+            name
+        }
     }
 
 }
 
-export function deselectImage(index) {
-
-    return {
-        type: DESELECT_IMAGE,
-        payload: index
-    }
-
-}
 
 export function postFeedback(query) {
 

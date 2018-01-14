@@ -15,12 +15,16 @@ class App extends Component {
   }
 
   onSearchClick = (event) => {
-    this.props.getImages('LMAO');
     this.props.searchPressed();
+    this.props.getImages(this.props.currentSearchText);
   }
 
   onSearchTextChange = (value) => {
     this.props.searchTextChanged(value);
+  }
+
+  onSelectImage = (name) => {
+    this.props.selectImage(name);
   }
 
   render() {
@@ -36,9 +40,9 @@ class App extends Component {
         <SearchBar 
           value={this.props.currentSearchText}
           onClick={event => this.onSearchClick(event)} 
-          onChange={(value) => this.onSearchTextChange(value)}
+          onChange={value => this.onSearchTextChange(value)}
         />
-        <ImageGrid imageData={imagedata} style={appStyles.imageGrid}/>
+        <ImageGrid imagesSrcs={imagedata} selectedImagesSrcs={this.props.selectedImages} style={appStyles.imageGrid} onClickElement={name => this.onSelectImage(name)} />
         <Button raised style={appStyles.submitButton} onClick={event => this.onSubmitClicked(event)}>Submit</Button>
       </div>
     );
@@ -64,12 +68,13 @@ const appStyles = {
 }
 
 function mapStateToProps(state) {
+
   return {
-    images: state.images,
-    selectedImages: state.selectedImages,
-    step: state.step,
-    fetching: state.fetching,
-    currentSearchText: state.currentSearchText
+    images: state.imagesReducer.images,
+    selectedImages: state.imagesReducer.selectedImages,
+    step: state.imagesReducer.step,
+    fetching: state.imagesReducer.fetching,
+    currentSearchText: state.searchReducer.currentSearchText
   }
 }
 
@@ -77,7 +82,8 @@ function mapDispatchToProps(dispatch) {
   const {
     getImages,
     getImagesSuccess,
-    getImagesFailure
+    getImagesFailure,
+    selectImage
   } = imagesActions;
   const {
     searchTextChanged,
@@ -87,6 +93,7 @@ function mapDispatchToProps(dispatch) {
     getImages: compose(dispatch, getImages),
     getImagesSuccess: compose(dispatch, getImagesSuccess),
     getImagesFailure: compose(dispatch, getImagesFailure),
+    selectImage: compose(dispatch, selectImage),
     searchTextChanged: compose(dispatch, searchTextChanged),
     searchPressed: compose(dispatch, searchPressed),
   }

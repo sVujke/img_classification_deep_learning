@@ -1,4 +1,4 @@
-import { call, put, takeEvery, select } from 'redux-saga/effects';
+import { call, put, takeEvery } from 'redux-saga/effects';
 
 import * as api from '../../api/imagesApi';
 import {
@@ -10,7 +10,7 @@ import {
     GET_IMAGES_REQUEST
 } from '../constants/imagesConstants';
 
-import { fetchingSelector } from '../reducers/selectors'
+//import { fetchingSelector } from '../reducers/selectors'
 export function* requestImages(action) {
     //const isFetching = yield select(fetchingSelector);
     try {
@@ -18,7 +18,6 @@ export function* requestImages(action) {
             api.getImages,
             action.payload.query
         );
-        console.log(result)
         if (result.ok) {
             yield put(getImagesSuccess(result.images, result.step));
         }
