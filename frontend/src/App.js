@@ -35,12 +35,6 @@ class App extends Component {
 
   render() {
   
-    // var imagedata = [];
-    // for(var i = 0; i< 41; i++) { 
-    //   var str = i >= 10 ? '0000' : '00000';
-    //   imagedata.push(`${str}${i}.jpg`)
-    // }
-
     const middleComponent = () => {
       if (this.props.fetching || this.props.posting){
         return(
@@ -119,14 +113,13 @@ const appStyles = {
   },
   progressContainer: {
     width: '100%',
-    height: '100%',
+    height: '20%',
     margin: 'auto',
     display: 'flex',
     justifyContent: 'center',
     position: 'absolute',
     alignItems: 'center',
-    top: 0,
-    bottom: 0,
+    top: '40%',
     left: 0,
     right: 0
   },
