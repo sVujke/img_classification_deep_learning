@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import SearchBar from './components/SearchBar';
-import ImageGrid from './components/ImageGrid';
 import { Button, Typography, CircularProgress } from 'material-ui'
 import { connect } from 'react-redux'
 import * as imagesActions from './redux/actions/imagesActions';
 import * as searchActions from './redux/actions/searchActions';
+import Gallery from 'react-photo-gallery';
+import SelectedImage from './components/SelectedImage';
 
 import { compose } from './utils/compose'
 
@@ -27,11 +28,10 @@ class App extends Component {
     this.props.searchTextChanged(value);
   }
 
-  onSelectImage = (name) => {
-    this.props.selectImage(name);
+  onSelectImage = (event, obj) => {
+    this.props.selectImage(obj.photo);
+    this.forceUpdate();
   }
-
-
 
   render() {
   
@@ -46,13 +46,8 @@ class App extends Component {
       else {
         if (this.props.images) {
           return (
-            <div>
-              <ImageGrid 
-                imagesSrcs={this.props.images} 
-                selectedImagesSrcs={this.props.selectedImages} 
-                style={appStyles.imageGrid} 
-                onClickElement={name => this.onSelectImage(name)} 
-              />
+            <div style={appStyles.imageGrid}>
+              <Gallery photos={this.props.images} onClick={this.onSelectImage} ImageComponent={SelectedImage} />
               <Button 
                 raised 
                 style={appStyles.submitButton} 
@@ -95,13 +90,13 @@ const appStyles = {
     margin: 12
   },
   imageGrid: { 
-    marginTop: 48 
+    marginTop: 20
   },
   submitButton: {
     marginLeft: 'auto',
     marginRight: 'auto',
-    marginTop: 48, 
-    marginBottom: 48, 
+    marginTop: 40, 
+    marginBottom: 40, 
     display: 'block', 
     backgroundColor: 'rgb(66,133,244)',
     color: 'white'

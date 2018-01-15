@@ -31,11 +31,11 @@ export function getImagesFailure() {
 }
 
 
-export function selectImage(name) {
+export function selectImage(image) {
     return {
         type: SELECT_IMAGE,
         payload: {
-            name
+            image
         }
     }
 }

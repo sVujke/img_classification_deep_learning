@@ -10,7 +10,6 @@ import {
 
 const initialState = {
     images: null,
-    selectedImages: null,
     step: null,
     fetching: false,
     posting: false,
@@ -20,21 +19,22 @@ const initialState = {
 export default function (state = initialState, action) {
     switch (action.type) {
         case GET_IMAGES_REQUEST:
-            return { ...state, fetching: true, images: null, step: null, selectedImages: null };
+            return { ...state, fetching: true, images: null, step: null };
 
         case GET_IMAGES_SUCCESS:
-            return { ...state, fetching: false, images: action.payload.images, step: action.payload.step, selectedImages: [] };
+            return { ...state, fetching: false, images: action.payload.images, step: action.payload.step };
 
         case GET_IMAGES_FAILURE:
-            return { ...state, fetching: false, images: null, step: null, selectedImages: null };
+            return { ...state, fetching: false, images: null, step: null };
 
 
         case SELECT_IMAGE: {
-            var selectedImages = state.selectedImages;
-            const { name } = action.payload;
-            const i = selectedImages.indexOf(name);
-            i === -1 ? selectedImages.push(name) : selectedImages.splice(i, 1);
-            return { ...state, selectedImages: selectedImages };
+            var images = state.images;
+            const { image } = action.payload;
+            const i = images.indexOf(image);
+            var photo = images[i];
+            photo.selected = !photo.selected;
+            return { ...state, images };
         }
 
 
