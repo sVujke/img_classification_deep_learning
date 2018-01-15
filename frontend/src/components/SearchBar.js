@@ -6,14 +6,18 @@ import PropTypes from 'prop-types';
 const SEARCH_TEXT_FIELD_PALCEHOLDER_TEXT = 'Search';
 
 export default class SearchBar extends Component {
-    
+    state = {
+        elevation: 1
+    }
+
+    onMouseOver = () => this.setState({ elevation: 4 });
+
+    onMouseOut = () => this.setState({ elevation: 2 });
+
     handleOnKeyDown = (event) => {
         switch (event.key) {
             case 'Enter':
                 this.props.onClick();
-                break
-            case 'Escape':
-                // etc...
                 break
             default: break
         }
@@ -25,10 +29,12 @@ export default class SearchBar extends Component {
 
     render () {
         return (
-            <Paper elevation={2} style={searchBarDefaultStyles.paper}>
+            <Paper elevation={this.state.elevation} style={searchBarDefaultStyles.paper}>
                 <div style={searchBarDefaultStyles.container}>
                     <div style={searchBarDefaultStyles.searchTextFieldContainer}>
                         <TextField
+                            onMouseOver={this.onMouseOver}
+                            onMouseOut={this.onMouseOut}
                             autoFocus
                             fullWidth
                             placeholder={SEARCH_TEXT_FIELD_PALCEHOLDER_TEXT}
@@ -67,7 +73,7 @@ SearchBar.propTypes={
 
 const searchBarDefaultStyles = {
     paper: {
-        
+
     },
     container: {
         padding: 4,
