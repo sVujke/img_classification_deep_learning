@@ -1,5 +1,5 @@
-import { call, put, takeEvery, select } from 'redux-saga/effects';
-
+import { call, put, takeEvery, select, wait } from 'redux-saga/effects';
+import { delay } from 'redux-saga';
 import * as api from '../../api/imagesApi';
 import {
     getImagesSuccess,
@@ -7,21 +7,41 @@ import {
     postFeedbackSuccess,
     postFeedbackFailure
 } from '../actions/imagesActions';
-
 import {
     GET_IMAGES_REQUEST, POST_FEEDBACK_REQUEST
 } from '../constants/imagesConstants';
 
-import { activeSearchSelector, stepSelector, selectedImagesSelector, imagesSelector } from '../reducers/selectors';
+import { activeSearchSelector, stepSelector, imagesSelector } from '../reducers/selectors';
+import { wrapImages, unwrapImages } from '../../utils/imageWrapper';
+
+// For test
+// export function* requestImages(action) {
+//     var imagedata = [];
+//     for (var i = 0; i < 41; i++) {
+//         var str = i >= 10 ? '0000' : '00000';
+//         imagedata.push(`http://localhost:3000/mlimages/${str}${i}.jpg`)
+//     }
+//     yield call(delay, 1);
+//     yield put(getImagesSuccess(wrapImages(imagedata), 2));
+// }
+// export function* postFeedback() {
+//     yield put(postFeedbackSuccess());
+// }
+// End For test
+
 
 export function* requestImages(action) {
+    yield call(delay, 1); 
+
     try {
+        //needed so the photo gallery will disappear for 1 millisec 
+        //so that all the loaded images could reload again to trigger the update
         const result = yield call(
             api.getImages,
             action.payload.query
         );
         if (result.ok) {
-            yield put(getImagesSuccess(result.images, result.step));
+            yield put(getImagesSuccess(wrapImages(result.images), result.step));
         }
         else {
             yield put(getImagesFailure(result.status));
@@ -33,11 +53,8 @@ export function* requestImages(action) {
 
 export function* postFeedback() {
 
-    const selectedImages = yield select(selectedImagesSelector);
     const images = yield select(imagesSelector);
-    var nonSelectedImages = images.filter(function (item) {
-        return selectedImages.indexOf(item) === -1;
-    });
+    const { selectedImages, nonSelectedImages } = unwrapImages(images);
     const data = {
         query: yield select(activeSearchSelector),
         step: yield select(stepSelector),
