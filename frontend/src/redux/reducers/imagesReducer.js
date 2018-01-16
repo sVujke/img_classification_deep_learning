@@ -1,5 +1,6 @@
 import { 
     SELECT_IMAGE,
+    IMAGE_LOADED,
     GET_IMAGES_REQUEST,
     GET_IMAGES_SUCCESS,
     GET_IMAGES_FAILURE,
@@ -19,22 +20,42 @@ const initialState = {
 export default function (state = initialState, action) {
     switch (action.type) {
         case GET_IMAGES_REQUEST:
-            return { ...state, fetching: true, images: null, step: null };
+            return { ...initialState, fetching: true };
 
         case GET_IMAGES_SUCCESS:
             return { ...state, fetching: false, images: action.payload.images, step: action.payload.step };
 
         case GET_IMAGES_FAILURE:
-            return { ...state, fetching: false, images: null, step: null };
+            return { ...initialState };
 
 
         case SELECT_IMAGE: {
-            var images = state.images;
-            const { image } = action.payload;
-            const i = images.indexOf(image);
-            var photo = images[i];
-            photo.selected = !photo.selected;
-            return { ...state, images };
+            let { images } = state;
+            let { image } = action.payload;
+            let updatedImages = images.map((item, index) => {
+                if (item.src === image.src) {
+                    item.selected = !item.selected;
+                }
+                return item;
+            })
+            return {
+                ...state, images: updatedImages
+            }
+        }
+
+        case IMAGE_LOADED: {
+            let { images } = state;
+            let { image, width, height } = action.payload;
+            let updatedImages = images.map((item, index) => {
+                if (item.src === image.src) {
+                    item.width = width;
+                    item.height = height;
+                }
+                return item;
+            })
+            return {
+                ...state, images: updatedImages
+            }
         }
 
 
@@ -43,8 +64,7 @@ export default function (state = initialState, action) {
 
         case POST_FEEDBACK_SUCCESS:
             {
-                const newState = initialState;
-                return { ...newState, posted: true };
+                return { ...initialState, posted: true };
             }
 
         case POST_FEEDBACK_FAILURE:

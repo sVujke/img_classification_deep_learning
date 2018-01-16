@@ -1,14 +1,11 @@
-import { imgSize as sizeOfImage } from "./imgSize";
-
 export const wrapImages = (imgArray) => {
     var retval = []
     for (var i = 0; i < imgArray.length; i++) {
         let src = imgArray[i];
-        let imgSize = sizeOfImage(src);
         let obj = {
             src,
-            width: 1,//imgSize.width, 
-            height: 1,//imgSize.height,
+            width: 1, 
+            height: 1,
             selected: false
         }
         retval.push(obj);

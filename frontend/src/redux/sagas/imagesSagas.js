@@ -1,5 +1,5 @@
-import { call, put, takeEvery, select } from 'redux-saga/effects';
-
+import { call, put, takeEvery, select, wait } from 'redux-saga/effects';
+import { delay } from 'redux-saga';
 import * as api from '../../api/imagesApi';
 import {
     getImagesSuccess,
@@ -21,6 +21,7 @@ export function* requestImages(action) {
         var str = i >= 10 ? '0000' : '00000';
         imagedata.push(`http://localhost:3000/mlimages/${str}${i}.jpg`)
     }
+    yield call(delay, 1);
     yield put(getImagesSuccess(wrapImages(imagedata), 2));
 }
 export function* postFeedback() {
@@ -31,6 +32,9 @@ export function* postFeedback() {
 
 // export function* requestImages(action) {
 //     try {
+//         //needed so the photo gallery will disappear for 1 millisec 
+//         //so that all the loaded images could reload again to trigger the update
+//         yield call(delay, 1); 
 //         const result = yield call(
 //             api.getImages,
 //             action.payload.query

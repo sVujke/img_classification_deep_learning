@@ -1,5 +1,8 @@
-import React from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux'
+import * as imagesActions from '../redux/actions/imagesActions';
+import { compose } from '../utils/compose'
 
 const Checkmark = ({ selected }) => (
     <div style={selected ? { left: '4px', top: '4px', position: 'absolute', zIndex: '1' } : { display: 'none' }}>
@@ -28,23 +31,29 @@ const cont = {
     position: 'relative'
 }
 
-const SelectedImage = ({ index, onClick, photo, margin }) => {
-    //calculate x,y scale
-    const sx = (100 - ((30 / photo.width) * 100)) / 100;
-    const sy = (100 - ((30 / photo.height) * 100)) / 100;
-    selectedImgStyle.transform = `translateZ(0px) scale3d(${sx}, ${sy}, 1)`;
-    return (
-        <div style={{ margin, width: photo.width, ...cont }} className={!photo.selected ? 'not-selected' : ''}>
+class SelectedImage extends Component {
+    onFinishLoading (e) {
+        this.props.imageLoaded({photo: this.props.photo, width: e.target.naturalWidth, height: e.target.naturalHeight});
+        console.log('loaded' + this.props.photo.src)
+    }
+    render () {
+        const sx = (100 - ((30 / this.props.photo.width) * 100)) / 100;
+        const sy = (100 - ((30 / this.props.photo.height) * 100)) / 100;
+        selectedImgStyle.transform = `translateZ(0px) scale3d(${sx}, ${sy}, 1)`;
+        return (
+            <div style={{ margin: this.props.margin, width: this.props.photo.width, ...cont }} className={!this.props.photo.selected ? 'not-selected' : ''}>
 
-            <Checkmark selected={photo.selected ? true : false} />
-            <img alt={photo.src} style={photo.selected ? { ...imgStyle, ...selectedImgStyle } : { ...imgStyle }} {...photo} onClick={(e) => onClick(e, { index, photo })} />
+                <Checkmark selected={this.props.photo.selected ? true : false} />
+                <img onLoad={e => this.onFinishLoading(e)} alt={this.props.photo.src} style={this.props.photo.selected ? { ...imgStyle, ...selectedImgStyle } : { ...imgStyle }} {...this.props.photo} onClick={(e) => this.props.onClick(e, { index: this.props.index, photo: this.props.photo })} />
 
-            <style>
-                {`.not-selected:hover{outline:2px solid rgb(66,133,244)}`}
-            </style>
-        </div>
-    )
+                <style>
+                    {`.not-selected:hover{outline:2px solid rgb(66,133,244)}`}
+                </style>
+            </div>
+        );
+    }
 };
+
 SelectedImage.propTypes = {
     index: PropTypes.number,
     onClick: PropTypes.func,
@@ -56,5 +65,12 @@ SelectedImage.propTypes = {
     }),
     margin: PropTypes.number
 }
-
-export default SelectedImage;
+function mapDispatchToProps(dispatch) {
+    const {
+        imageLoaded
+  } = imagesActions;
+    return {
+        imageLoaded: compose(dispatch, imageLoaded),
+    }
+}
+export default connect(null, mapDispatchToProps)(SelectedImage);

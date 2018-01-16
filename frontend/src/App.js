@@ -12,13 +12,15 @@ import { compose } from './utils/compose'
 class App extends Component {
 
   onSubmitClicked = (event) => {
-    if(this.props.posting) return;
+    if(this.props.posting || this.props.fetching) return;
     this.props.postFeedback();
   }
 
   onSearchClick = (event) => {
-    if (this.props.fetching) return;
-    if (this.props.currentSearchText) {
+    if (this.props.fetching || this.props.posting) return;
+    let searchValue = this.props.currentSearchText.trim();
+    if (searchValue) {
+      this.props.searchTextChanged(searchValue);
       this.props.searchPressed();
       this.props.getImages(this.props.currentSearchText);
     }
@@ -30,11 +32,9 @@ class App extends Component {
 
   onSelectImage = (event, obj) => {
     this.props.selectImage(obj.photo);
-    this.forceUpdate();
   }
 
   render() {
-  
     const middleComponent = () => {
       if (this.props.fetching || this.props.posting){
         return(
@@ -47,7 +47,7 @@ class App extends Component {
         if (this.props.images) {
           return (
             <div style={appStyles.imageGrid}>
-              <Gallery photos={this.props.images} onClick={this.onSelectImage} ImageComponent={SelectedImage} />
+              <Gallery photos={this.props.images} onClick={this.onSelectImage} ImageComponent={SelectedImage} margin={4}/>
               <Button 
                 raised 
                 style={appStyles.submitButton} 
@@ -75,7 +75,7 @@ class App extends Component {
     return (
       <div className="App" style={appStyles.app}>
         <SearchBar 
-          value={this.props.currentSearchText}
+          searchTextValue={this.props.currentSearchText}
           onClick={event => this.onSearchClick(event)} 
           onChange={value => this.onSearchTextChange(value)}
         />
@@ -127,7 +127,6 @@ function mapStateToProps(state) {
 
   return {
     images: state.imagesReducer.images,
-    selectedImages: state.imagesReducer.selectedImages,
     step: state.imagesReducer.step,
     fetching: state.imagesReducer.fetching,
     posted: state.imagesReducer.posted,

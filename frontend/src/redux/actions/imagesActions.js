@@ -5,7 +5,8 @@ import {
     GET_IMAGES_FAILURE,
     POST_FEEDBACK_REQUEST,
     POST_FEEDBACK_SUCCESS,
-    POST_FEEDBACK_FAILURE
+    POST_FEEDBACK_FAILURE,
+    IMAGE_LOADED
 
 } from '../constants/imagesConstants';
 
@@ -39,7 +40,16 @@ export function selectImage(image) {
         }
     }
 }
-
+export function imageLoaded(image) {
+    return {
+        type: IMAGE_LOADED,
+        payload: {
+            image: image.photo,
+            width: image.width,
+            height: image.height
+        }
+    }
+}
 
 export function postFeedback() {
     return {
