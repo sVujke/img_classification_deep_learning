@@ -15,67 +15,68 @@ import { activeSearchSelector, stepSelector, imagesSelector } from '../reducers/
 import { wrapImages, unwrapImages } from '../../utils/imageWrapper';
 
 // For test
-export function* requestImages(action) {
-    var imagedata = [];
-    for (var i = 0; i < 41; i++) {
-        var str = i >= 10 ? '0000' : '00000';
-        imagedata.push(`http://localhost:3000/mlimages/${str}${i}.jpg`)
-    }
-    yield call(delay, 1);
-    yield put(getImagesSuccess(wrapImages(imagedata), 2));
-}
-export function* postFeedback() {
-    yield put(postFeedbackSuccess());
-}
+// export function* requestImages(action) {
+//     var imagedata = [];
+//     for (var i = 0; i < 41; i++) {
+//         var str = i >= 10 ? '0000' : '00000';
+//         imagedata.push(`http://localhost:3000/mlimages/${str}${i}.jpg`)
+//     }
+//     yield call(delay, 1);
+//     yield put(getImagesSuccess(wrapImages(imagedata), 2));
+// }
+// export function* postFeedback() {
+//     yield put(postFeedbackSuccess());
+// }
 // End For test
 
 
-// export function* requestImages(action) {
-//     try {
-//         //needed so the photo gallery will disappear for 1 millisec 
-//         //so that all the loaded images could reload again to trigger the update
-//         yield call(delay, 1); 
-//         const result = yield call(
-//             api.getImages,
-//             action.payload.query
-//         );
-//         if (result.ok) {
-//             yield put(getImagesSuccess(wrapImages(result.images), result.step));
-//         }
-//         else {
-//             yield put(getImagesFailure(result.status));
-//         }
-//     } catch (e) {
-//         yield put(getImagesFailure());
-//     }
-// }
+export function* requestImages(action) {
+    yield call(delay, 1); 
 
-// export function* postFeedback() {
+    try {
+        //needed so the photo gallery will disappear for 1 millisec 
+        //so that all the loaded images could reload again to trigger the update
+        const result = yield call(
+            api.getImages,
+            action.payload.query
+        );
+        if (result.ok) {
+            yield put(getImagesSuccess(wrapImages(result.images), result.step));
+        }
+        else {
+            yield put(getImagesFailure(result.status));
+        }
+    } catch (e) {
+        yield put(getImagesFailure());
+    }
+}
 
-//     const images = yield select(imagesSelector);
-//     const { selectedImages, nonSelectedImages } = unwrapImages(images);
-//     const data = {
-//         query: yield select(activeSearchSelector),
-//         step: yield select(stepSelector),
-//         selectedImages,
-//         nonSelectedImages
-//     }
+export function* postFeedback() {
 
-//     try {
-//         const result = yield call(
-//             api.postFeedback,
-//             data
-//         );
-//         if (result.ok) {
-//             yield put(postFeedbackSuccess());
-//         }
-//         else {
-//             yield put(postFeedbackFailure());
-//         }
-//     } catch (e) {
-//         yield put(postFeedbackFailure());
-//     }
-// }
+    const images = yield select(imagesSelector);
+    const { selectedImages, nonSelectedImages } = unwrapImages(images);
+    const data = {
+        query: yield select(activeSearchSelector),
+        step: yield select(stepSelector),
+        selectedImages,
+        nonSelectedImages
+    }
+
+    try {
+        const result = yield call(
+            api.postFeedback,
+            data
+        );
+        if (result.ok) {
+            yield put(postFeedbackSuccess());
+        }
+        else {
+            yield put(postFeedbackFailure());
+        }
+    } catch (e) {
+        yield put(postFeedbackFailure());
+    }
+}
 
 export default function* root() {
     yield takeEvery(GET_IMAGES_REQUEST, requestImages);

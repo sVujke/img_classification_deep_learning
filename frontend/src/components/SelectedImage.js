@@ -21,7 +21,7 @@ const imgStyle = {
 };
 const selectedImgStyle = {
     transform: 'translateZ(0px) scale3d(0.9, 0.9, 1)',
-    transition: 'transform .135s cubic-bezier(0.0,0.0,0.2,1),opacity linear .15s'
+    transition: 'transform .135s cubic-bezier(0.0,0.0,0.2,1),opacity linear .15s',
 };
 const cont = {
     backgroundColor: '#eee',
@@ -34,8 +34,8 @@ const cont = {
 class SelectedImage extends Component {
     onFinishLoading (e) {
         this.props.imageLoaded({photo: this.props.photo, width: e.target.naturalWidth, height: e.target.naturalHeight});
-        console.log('loaded' + this.props.photo.src)
     }
+    
     render () {
         const sx = (100 - ((30 / this.props.photo.width) * 100)) / 100;
         const sy = (100 - ((30 / this.props.photo.height) * 100)) / 100;

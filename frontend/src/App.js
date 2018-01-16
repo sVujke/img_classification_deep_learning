@@ -4,9 +4,11 @@ import { Button, Typography, CircularProgress } from 'material-ui'
 import { connect } from 'react-redux'
 import * as imagesActions from './redux/actions/imagesActions';
 import * as searchActions from './redux/actions/searchActions';
+import * as screenWidthActions from './redux/actions/screenWidthActions';
+
 import Gallery from 'react-photo-gallery';
 import SelectedImage from './components/SelectedImage';
-
+import ResizeAware from 'react-resize-aware';
 import { compose } from './utils/compose'
 
 class App extends Component {
@@ -47,7 +49,16 @@ class App extends Component {
         if (this.props.images) {
           return (
             <div style={appStyles.imageGrid}>
-              <Gallery photos={this.props.images} onClick={this.onSelectImage} ImageComponent={SelectedImage} margin={4}/>
+              <ResizeAware 
+                onResize={({width}) => this.props.screenWidthChanged(width)}>
+                  <Gallery 
+                    photos={this.props.images}
+                    onClick={this.onSelectImage} 
+                    ImageComponent={SelectedImage} 
+                    margin={4}
+                    columns={Math.ceil(this.props.screenWidth/180)}
+                  />
+              </ResizeAware>
               <Button 
                 raised 
                 style={appStyles.submitButton} 
@@ -71,7 +82,6 @@ class App extends Component {
         }
       }
     }
-
     return (
       <div className="App" style={appStyles.app}>
         <SearchBar 
@@ -131,7 +141,8 @@ function mapStateToProps(state) {
     fetching: state.imagesReducer.fetching,
     posted: state.imagesReducer.posted,
     posting: state.imagesReducer.posting,
-    currentSearchText: state.searchReducer.currentSearchText
+    currentSearchText: state.searchReducer.currentSearchText,
+    screenWidth: state.screenWidthReducer.screenWidth
   }
 }
 
@@ -147,6 +158,9 @@ function mapDispatchToProps(dispatch) {
     searchTextChanged,
     searchPressed
   } = searchActions;
+  const {
+    screenWidthChanged
+  } = screenWidthActions
   return {
     getImages: compose(dispatch, getImages),
     getImagesSuccess: compose(dispatch, getImagesSuccess),
@@ -155,6 +169,7 @@ function mapDispatchToProps(dispatch) {
     postFeedback: compose(dispatch, postFeedback),
     searchTextChanged: compose(dispatch, searchTextChanged),
     searchPressed: compose(dispatch, searchPressed),
+    screenWidthChanged: compose(dispatch, screenWidthChanged)
   }
 }
 
