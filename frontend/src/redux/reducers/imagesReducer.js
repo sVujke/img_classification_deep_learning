@@ -64,7 +64,7 @@ export default function (state = initialState, action) {
 
         case POST_FEEDBACK_SUCCESS:
             {
-                return { ...initialState, loading: true };
+                return { ...initialState, loading: false };
             }
 
         case POST_FEEDBACK_FAILURE:
