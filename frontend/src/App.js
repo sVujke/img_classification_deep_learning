@@ -14,12 +14,12 @@ import { compose } from './utils/compose'
 class App extends Component {
 
   onSubmitClicked = (event) => {
-    if(this.props.posting || this.props.fetching) return;
+    if(this.props.loading) return;
     this.props.postFeedback();
   }
 
   onSearchClick = (event) => {
-    if (this.props.fetching || this.props.posting) return;
+    if (this.props.loading) return;
     let searchValue = this.props.currentSearchText.trim();
     if (searchValue) {
       this.props.searchTextChanged(searchValue);
@@ -38,7 +38,7 @@ class App extends Component {
 
   render() {
     const middleComponent = () => {
-      if (this.props.fetching || this.props.posting){
+      if (this.props.loading){
         return(
           <div style={appStyles.progressContainer}>
             <CircularProgress thickness={3} size={150} style={appStyles.progress} />
@@ -76,7 +76,18 @@ class App extends Component {
                 </Typography>
               </div>
             );
-          } else {
+          } else if (this.props.error){
+            const { error } = this.props;
+            return (
+              <div style={appStyles.progressContainer}>
+                <Typography style={appStyles.errorText}>
+                  {error.message}<br></br>{error.response ? error.response : null}
+                </Typography>
+                
+            </div>
+            );
+          }
+            else {
             return null;
           }
         }
@@ -116,6 +127,11 @@ const appStyles = {
     textAlign: 'center',
     color: 'rgb(66,133,244)'
   },
+  errorText: {
+    fontSize: 25,
+    textAlign: 'center',
+    color: '#ff0033'
+  },
   progressContainer: {
     width: '100%',
     height: '20%',
@@ -138,9 +154,9 @@ function mapStateToProps(state) {
   return {
     images: state.imagesReducer.images,
     step: state.imagesReducer.step,
-    fetching: state.imagesReducer.fetching,
+    loading: state.imagesReducer.loading,
     posted: state.imagesReducer.posted,
-    posting: state.imagesReducer.posting,
+    error: state.imagesReducer.error,
     currentSearchText: state.searchReducer.currentSearchText,
     screenWidth: state.screenWidthReducer.screenWidth
   }
