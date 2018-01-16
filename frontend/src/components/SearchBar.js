@@ -55,7 +55,7 @@ export default class SearchBar extends Component {
                         />
                     </div>
                     <div style={searchBarDefaultStyles.searchButtonContainer}>
-                        <ButtonBase style={searchBarDefaultStyles.searchButton} onClick={event => this.props.onClick(event)}>
+                        <ButtonBase disableRipple style={searchBarDefaultStyles.searchButton} onClick={event => this.props.onClick(event)}>
                             <SearchIcon />
                         </ButtonBase>
                     </div>

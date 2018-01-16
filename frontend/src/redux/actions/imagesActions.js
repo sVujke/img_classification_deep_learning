@@ -25,9 +25,10 @@ export function getImagesSuccess(images, step) {
         payload: {images, step}
     }
 }
-export function getImagesFailure() {
+export function getImagesFailure(error) {
     return {
-        type: GET_IMAGES_FAILURE
+        type: GET_IMAGES_FAILURE,
+        payload: { error }
     }
 }
 
@@ -61,8 +62,9 @@ export function postFeedbackSuccess() {
         type: POST_FEEDBACK_SUCCESS
     }
 }
-export function postFeedbackFailure() {
+export function postFeedbackFailure(error) {
     return {
-        type: POST_FEEDBACK_FAILURE
+        type: POST_FEEDBACK_FAILURE,
+        payload: { error }
     }
 }

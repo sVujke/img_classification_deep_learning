@@ -44,10 +44,10 @@ export function* requestImages(action) {
             yield put(getImagesSuccess(wrapImages(result.images), result.step));
         }
         else {
-            yield put(getImagesFailure(result.status));
+            yield put(getImagesFailure(result.error));
         }
-    } catch (e) {
-        yield put(getImagesFailure());
+    } catch (error) {
+        yield put(getImagesFailure(error));
     }
 }
 
@@ -71,10 +71,10 @@ export function* postFeedback() {
             yield put(postFeedbackSuccess());
         }
         else {
-            yield put(postFeedbackFailure());
+            yield put(postFeedbackFailure(result.error));
         }
-    } catch (e) {
-        yield put(postFeedbackFailure());
+    } catch (error) {
+        yield put(postFeedbackFailure(error));
     }
 }
 

@@ -12,21 +12,21 @@ import {
 const initialState = {
     images: null,
     step: null,
-    fetching: false,
-    posting: false,
-    posted: false
+    loading: false,
+    posted: false,
+    error: null
 }
 
 export default function (state = initialState, action) {
     switch (action.type) {
         case GET_IMAGES_REQUEST:
-            return { ...initialState, fetching: true };
+            return { ...initialState, loading: true };
 
         case GET_IMAGES_SUCCESS:
-            return { ...state, fetching: false, images: action.payload.images, step: action.payload.step };
+            return { ...state, loading: false, images: action.payload.images, step: action.payload.step, error: null };
 
         case GET_IMAGES_FAILURE:
-            return { ...initialState };
+            return { ...initialState, error: action.payload.error };
 
 
         case SELECT_IMAGE: {
@@ -60,15 +60,15 @@ export default function (state = initialState, action) {
 
 
         case POST_FEEDBACK_REQUEST:
-            return { ...state, posting: true};
+            return { ...state, loading: true, error: null};
 
         case POST_FEEDBACK_SUCCESS:
             {
-                return { ...initialState, posted: true };
+                return { ...initialState, loading: true };
             }
 
         case POST_FEEDBACK_FAILURE:
-            return { ...state, posting: false };
+            return { ...initialState, error: action.payload.error };
 
         default:
             return state;

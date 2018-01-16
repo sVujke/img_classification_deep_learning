@@ -1,6 +1,4 @@
-export const fetchingSelector = state => state.imagesReducer.fetching;
-export const postingSelector = state => state.imagesReducer.posting;
-
+export const loadingSelector = state => state.imagesReducer.loading;
 
 export const stepSelector = state => state.imagesReducer.step;
 export const activeSearchSelector = state => state.searchReducer.activeSearch;
