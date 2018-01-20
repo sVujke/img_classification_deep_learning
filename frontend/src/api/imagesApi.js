@@ -15,5 +15,9 @@ export function getImages(query) {
 
 export function postFeedback (data) {
     const url = ApiURLs.host + ApiMethods.feedback;
-    return axios.post(url, data);
+    return axios.post(url, JSON.stringify(data), {
+        headers:  {
+            'Content-Type': 'application/json'
+        }
+    });
 }
