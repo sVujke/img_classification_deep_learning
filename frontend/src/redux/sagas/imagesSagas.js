@@ -31,17 +31,17 @@ import { wrapImages, unwrapImages } from '../../utils/imageWrapper';
 
 
 export function* requestImages(action) {
-    yield call(delay, 1); 
+    yield call(delay, 1);
 
     try {
-        //needed so the photo gallery will disappear for 1 millisec 
+        //needed so the photo gallery will disappear for 1 millisec
         //so that all the loaded images could reload again to trigger the update
         const result = yield call(
             api.getImages,
             action.payload.query
         );
-        if (result.ok) {
-            yield put(getImagesSuccess(wrapImages(result.images), result.step));
+        if (result.status === 200) {
+            yield put(getImagesSuccess(wrapImages(result.data.images), result.data.step));
         }
         else {
             yield put(getImagesFailure(result.error));

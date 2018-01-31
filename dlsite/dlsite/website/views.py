@@ -25,7 +25,7 @@ def get_images():
     # TODO: take random images from ClusterImage
 
     images = Image.objects.all()
-    return [i.title for i in images]
+    return ["mlimages/" + i.title for i in images]
 
 
 def keyword_exists(k):
@@ -53,7 +53,8 @@ def send_random(q):
     return {
         "step": step,
         "query": q,
-        "images": images
+        "images": images,
+        "ok": True
     }
 
 
