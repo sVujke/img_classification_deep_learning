@@ -78,7 +78,7 @@ def extract_data(df):
 # df = extract_data(df)
 
 def save(df, save_path):
-    df.to_csv(save_path, encoding="utf-8")
+    df.to_csv(save_path, encoding="utf-8", index=False)
     print("File saved at: ", save_path)
 
 
