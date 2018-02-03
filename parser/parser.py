@@ -56,10 +56,17 @@ def filter_evaluation(df):
 def extract_data(df):
     """ Extracts two columns for paths where images are located, image names, and caption for each image
     """
-    paths = list(df.iloc[::2, :].values)
+    df = df.reset_index(drop=True)
+    df.head(20)
+    
+    paths = list(df.iloc[1::3, :].values)
     paths = [path[0] for path in paths]
-    images = list(df.iloc[1:].iloc[::2, :].values)
+    images = list(df.iloc[2::3, :].values)
     images = [img[0] for img in images]
+    
+#     print("IMGS:",len(images))
+#     print("PATHS:",len(paths))
+#     print(paths[1])
     
     df = pd.DataFrame({
     "paths": paths,
