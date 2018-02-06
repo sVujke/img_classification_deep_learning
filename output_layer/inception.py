@@ -455,6 +455,46 @@ class Inception:
 
             # Print the score and class-name.
             print("{0:>6.2%} : {1}".format(score, name))
+            
+    def get_scores(self, pred, k=10, only_first_name=True):
+        """
+        Returns the scores (or probabilities) for the top-k predicted classes.
+
+        :param pred:
+            Predicted class-labels returned from the predict() function.
+
+        :param k:
+            How many classes to print.
+
+        :param only_first_name:
+            Some class-names are lists of names, if you only want the first name,
+            then set only_first_name=True.
+
+        :return:
+            Nothing.
+        """
+
+        # Get a sorted index for the pred-array.
+        idx = pred.argsort()
+
+        # The index is sorted lowest-to-highest values. Take the last k.
+        top_k = idx[-k:]
+
+        # Iterate the top-k classes in reversed order (i.e. highest first).
+        top_k_dict = {}
+        for cls in reversed(top_k):
+            # Lookup the class-name.
+            name = self.name_lookup.cls_to_name(cls=cls, only_first_name=only_first_name)
+
+            # Predicted score (or probability) for this class.
+            score = pred[cls]
+
+            # Print the score and class-name.
+            #print("{0:>6.2%} : {1}".format(score, name))
+            top_k_dict[name] = score
+        
+        return top_k_dict
+      
 
     def transfer_values(self, image_path=None, image=None):
         """
