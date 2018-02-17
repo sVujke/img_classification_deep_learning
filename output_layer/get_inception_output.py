@@ -7,6 +7,7 @@ from os import listdir
 from os.path import isfile, join
 from tqdm import tqdm
 import pandas as pd
+import numpy as np
 import sys
 
 
@@ -42,7 +43,7 @@ def write_output_to_pickle(image_lst, img_dir, model,save_path="output_inception
     
     df = pd.DataFrame({
         "img": imgs,
-        "output layer": output_layer,
+        "output layer": np.array(output_layer),
         "scores": top_k
     })
     
