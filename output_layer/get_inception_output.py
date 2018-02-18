@@ -35,7 +35,7 @@ def write_output_to_pickle(image_lst, img_dir, model,save_path="output_inception
     
     for img in tqdm(imgs):
         pred = model.classify(image_path=join(img_dir, img))
-        output_layer.append(list(pred))
+        output_layer.append(pred)
         scores = model.get_scores(pred=pred, k=k, only_first_name=only_first_name)
         top_k.append(scores)
         
@@ -43,7 +43,7 @@ def write_output_to_pickle(image_lst, img_dir, model,save_path="output_inception
     
     df = pd.DataFrame({
         "img": imgs,
-        "output layer": np.array(output_layer),
+        "output layer": output_layer,
         "scores": top_k
     })
     
