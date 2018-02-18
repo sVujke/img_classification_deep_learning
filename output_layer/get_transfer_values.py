@@ -27,7 +27,7 @@ def get_file_list(dir_path):
 def write_output_to_pickle(image_lst, img_dir, model,save_path="output_inception", k=5, only_first_name=False):
     """ Saves inception predictions with top 5 classes as a pickle file
     """
-    imgs = image_lst[:10]
+    imgs = image_lst
     output_layer = []
     
     # Looping over images
