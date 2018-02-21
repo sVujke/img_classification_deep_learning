@@ -22,7 +22,11 @@ def load_data_np(features_path):
 
 	data = data.sort_values("img")
 
-	data = np.array(data["output layer"].values)
+	if "transfer layer" in data.columns:
+		data = np.array(data["transfer layer"].values)
+	elif "output layer" in data.columns:
+		data = np.array(data["output layer"].values)
+
 
 	data = [np.array(row) for row in data]
 
