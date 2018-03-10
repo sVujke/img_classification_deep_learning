@@ -9,6 +9,9 @@ from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, I
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from os import listdir
+from random import sample
+
 
 def index(request):
     # images_list = Image.objects.all()
@@ -17,7 +20,14 @@ def index(request):
     return render(request, 'index.html', {})
 
 
-def get_images():
+def load_images_list():
+    path_to_images = "/home/a/Desktop/Current Courses/Deep Learning 10" \
+                     "/img_classification_deep_learning/frontend/public/images"
+    images_titles = [f for f in listdir(path_to_images)]
+    return images_titles
+
+
+def get_images(count=20):
     """Get image titles from DB
 
     :return: list of strings
@@ -25,7 +35,9 @@ def get_images():
     # TODO: take random images from ClusterImage
 
     images = Image.objects.all()
-    return ["mlimages/" + i.title for i in images]
+    subset = sample(images, count)
+    print("get random", count, "images. result ->", len(subset))
+    return ["images/" + i.title for i in subset]
 
 
 def keyword_exists(k):
@@ -48,7 +60,6 @@ def send_random(q):
     """
     step = 0
     images = get_images()
-    print(images)
 
     return {
         "step": step,
@@ -56,6 +67,14 @@ def send_random(q):
         "images": images,
         "ok": True
     }
+
+
+def save_feedback(d):
+    pass
+
+
+def read_feedback():
+    pass
 
 
 class SearchView(APIView):
@@ -75,12 +94,38 @@ class SearchView(APIView):
             if keyword_exists(query):
                 # TODO: return normal results
                 print("Keyword exists")
-                return Response({"query": query})
+
+                return Response(send_random(query))
+                # return Response({"query": query})
 
             else:
                 print("Send random")
                 Keyword(keyword=query).save()
                 return Response(send_random(query))
+
+        elif url_name == 'update_images':
+            print("get all images available for frontend")
+            images_list = load_images_list()
+            print("count images", len(images_list))
+            print("first 10", images_list[:10])
+
+            for img in images_list:
+                if img.endswith(".jpg"):
+                    Image(title=img).save()
+
+            return Response({"status": "images stored",
+                             "length": len(images_list)})
+
+        elif url_name == 'remove_images_from_db':
+            print("remove all images from DB")
+            Image.objects.all().delete()
+            print("done")
+            print("retrieve all images - should be empty")
+            imgs = Image.objects.all()
+            print(len(imgs))
+            print("done")
+
+            return Response({"status": "images deleted"})
 
         else:
             pass
@@ -97,9 +142,12 @@ class SearchView(APIView):
             data = request.data
             print("Data", data)
 
+            save_feedback(data)
+
         else:
-            pass
+            print("POST something else")
+
             data = request.data
-            print(data)
+            print("Data", data)
 
         return Response()
