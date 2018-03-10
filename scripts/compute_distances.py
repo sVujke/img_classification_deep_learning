@@ -12,15 +12,17 @@ import sys
 import gc
 
 def load_data_np(features_path):
-	""" Loads pickled data into a np array, sorted by images ascending
+	""" Loads pickled data into a np array, sorted by images ascending, returns np array of vectors and a np array of images (sorted)
 	"""
 	print("Loading data..\n\n")
 
 	data = pd.read_pickle(features_path)
 
-	# data = data.head(10000)
+	data = data.head(1000)
 
 	data = data.sort_values("img")
+
+	img_lst = data["img"].values
 
 	if "transfer layer" in data.columns:
 		data = np.array(data["transfer layer"].values)
@@ -34,7 +36,7 @@ def load_data_np(features_path):
 
 	n = gc.collect()
 
-	return data
+	return data, img_lst
 
 def get_distances_indicies(data, distance_metric, n_neighbors, n_cores):
 	""" Fits the KNN based on choasen distance parameters and number of neighbors 
@@ -44,6 +46,21 @@ def get_distances_indicies(data, distance_metric, n_neighbors, n_cores):
 	nbrs = NearestNeighbors(n_neighbors=n_neighbors, algorithm='auto', metric=distance_metric, n_jobs=n_cores).fit(data)
 	
 	return nbrs.kneighbors(data)
+
+def get_img_map(img_names):
+    """ Maps ordererd integer values to image names, example img  2 > 000002.jpg, 45 > 000045.jpg
+    """
+    img_map = {}
+    for i in range(0,len(img_names)):
+        img_map[i] = img_names[i]
+    return img_map
+
+def transform(nested_array, img_map):
+    """ Transforms nested array values from  2 > 000002.jpg, 45 > 000045.jpg
+    """
+    squarer = lambda t: img_map[t]
+    vfunc = np.vectorize(squarer, otypes=[np.str])
+    return np.array([vfunc(i) for i in nested_array])
 
 def main():
 
@@ -61,7 +78,9 @@ def main():
 	else:
 		n_cores = int(sys.argv[5])
 
-	data = load_data_np(features_path)
+	data, img_lst = load_data_np(features_path)
+
+	img_map = get_img_map(img_lst)
 
 	distances, indices = get_distances_indicies(data, distance_metric, n_neighbors, n_cores)
 
@@ -69,7 +88,9 @@ def main():
 
 	print("Distances saved to CSV file")
 
-	np.savetxt("{}/indices_{}.csv".format(output_dir,distance_metric), indices, delimiter=",")
+	indices = transform(indices, img_map)
+
+	np.savetxt("{}/indices_{}.csv".format(output_dir,distance_metric), indices, fmt='%s', delimiter=",")
 
 	print("Indices saved to CSV file")
 
