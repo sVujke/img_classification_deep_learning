@@ -18,7 +18,7 @@ def load_data_np(features_path):
 
 	data = pd.read_pickle(features_path)
 
-	data = data.head(1000)
+	# data = data.head(1000)
 
 	data = data.sort_values("img")
 
