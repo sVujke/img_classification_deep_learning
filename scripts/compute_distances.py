@@ -18,7 +18,7 @@ def load_data_np(features_path):
 
 	data = pd.read_pickle(features_path)
 
-	# data = data.head(1000)
+	data = data.head(1000)
 
 	data = data.sort_values("img")
 
@@ -89,6 +89,8 @@ def main():
 	print("Distances saved to CSV file")
 
 	indices = transform(indices, img_map)
+
+	print(indices[0])
 
 	np.savetxt("{}/indices_{}.csv".format(output_dir,distance_metric), indices, fmt='%s', delimiter=",")
 
