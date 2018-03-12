@@ -1,3 +1,30 @@
-# compile react bundle using:
-./node_modules/.bin/webpack --config webpack.config.js
+Try to run frontend + backend:
 
+1. Download all images from server
+	Put them to folder: /img_classification_deep_learning/frontend/public/images
+
+2. Download distances and indicies
+	scp -i path_to_your_key.pem -r etd2a@141.26.209.68:/home/etd2a/img_classification_deep_learning/data/ol_neighborfood/distances_euclidean.csv .
+	
+	scp -i path_to_your_key.pem -r etd2a@141.26.209.68:/home/etd2a/img_classification_deep_learning/data/ol_neighborfood/indices_euclidean.csv .
+
+	Put them to folder: /img_classification_deep_learning/dlsite/dlsite/website/static
+
+3. Run frontend
+	Go to folder: /img_classification_deep_learning/frontend
+	Run: 
+	npm install
+	npm start
+
+4. Run backend [you should have virtualenv for python2.7]
+	Go to folder: /img_classification_deep_learning/dlsite
+	Activate your virtualenv
+
+	Install requirments for virtualenv using pip
+		pip install -r req.txt
+
+	Activate python virtualenv 
+		source ~/python-venv/bin/activate
+	
+	Run server:
+		python manage.py runserver
