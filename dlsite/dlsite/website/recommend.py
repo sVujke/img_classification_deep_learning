@@ -55,9 +55,11 @@ def get_similar_imgs(img_name, img_map, indices, k, img_dir=None):
 def get_similar_imgs_rank(img_name, img_map, indices, distances, k, img_dir=None):
     """ Returns list of k similar images, with or without path (specify in imag_dir)
     """
+    print('run get_similar_imgs_rank')
+    # print('img_map', img_map)
+    print('img_name', img_name)
     index = get_key(img_map, img_name)
     print(index)
-    print(img_name)
     if img_dir is None:
         images = [img_map[x] for x in indices[index]]
         distances = [x for x in distances[index]]

@@ -20,16 +20,18 @@ FEEDBACK_FILE = ABS_PATH + settings.STATIC_URL + "feedback.csv"
 FEEDBACK_COLS = ["query", "step", "image", "status"]
 print("FEEDBACK_FILE:", FEEDBACK_FILE)
 
+PATH_TO_IMAGES_FRONTEND = "mlimages/"
 PATH_TO_IMAGES = "/home/a/Desktop/Current Courses/Deep Learning 10" \
-                 "/img_classification_deep_learning/frontend/public/images"
+                 "/all_images/"
+                 # "/img_classification_deep_learning/frontend/public/images"
 
 indices_euclidean_path = ABS_PATH + settings.STATIC_URL + "indices_euclidean.csv"
 INDICIES = np.genfromtxt(indices_euclidean_path, delimiter=',')
-INDICIES = INDICIES[:1000]
+# INDICIES = INDICIES[:1000]
 
 distances_euclidean_path = ABS_PATH + settings.STATIC_URL + "distances_euclidean.csv"
 DISTANCES = np.genfromtxt(distances_euclidean_path, delimiter=',')
-DISTANCES = DISTANCES[:1000]
+# DISTANCES = DISTANCES[:1000]
 
 IMG_MAP = None
 
@@ -57,7 +59,7 @@ def get_images(count=20):
     images = Image.objects.all()
     subset = sample(images, count)
     print("get random", count, "images. result ->", len(subset))
-    return ["images/" + i.title for i in subset]
+    return [PATH_TO_IMAGES_FRONTEND + i.title for i in subset]
 
 
 def keyword_exists(k):
@@ -149,11 +151,11 @@ def get_similar(d, k=10):
     selected_img = [x.split("/")[-1] for x in d.get("selectedImages")]
     print(selected_img)
 
-    print("IMG_MAP")
+    print("IMG_MAP", len(IMG_MAP))
     print(IMG_MAP.items()[:10])
-    print("INDICIES")
+    print("INDICIES", len(INDICIES))
     print(INDICIES)
-    print("DISTANCES")
+    print("DISTANCES", len(DISTANCES))
     print(DISTANCES)
     print("k")
     print(k)
@@ -162,8 +164,8 @@ def get_similar(d, k=10):
     print("run get_relevant_images_rank")
     images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
                                            k, operation="union", img_dir=PATH_TO_IMAGES)
-    print("return", images_list)
-    return images_list
+    print("return", len(images_list))
+    return images_list[:5]
 
 
 class SearchView(APIView):
@@ -240,6 +242,7 @@ class SearchView(APIView):
 
             save_feedback(data, self.df_feedback)
             similar_images = get_similar(data)
+            similar_images = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split('/')[-1], similar_images)
 
             query = data.get("query")
             step = data.get("step")
