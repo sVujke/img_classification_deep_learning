@@ -67,8 +67,11 @@ export function* postFeedback() {
             api.postFeedback,
             data
         );
-        if (result.ok) {
-            yield put(postFeedbackSuccess());
+        console.log("----------------------- result")
+        console.log(result)
+        if (result.status === 200) {
+            yield put(getImagesSuccess(wrapImages(result.data.images), result.data.step));
+            // yield put(postFeedbackSuccess());
         }
         else {
             yield put(postFeedbackFailure(result.error));
