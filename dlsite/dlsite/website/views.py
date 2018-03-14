@@ -140,7 +140,7 @@ def read_feedback():
     return df
 
 
-def get_similar(d, k=10):
+def get_similar(d, k=20):
     global IMG_MAP
 
     print("run get_similar")
@@ -165,7 +165,7 @@ def get_similar(d, k=10):
     images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
                                            k, operation="union", img_dir=PATH_TO_IMAGES)
     print("return", len(images_list))
-    return images_list[:5]
+    return images_list
 
 
 class SearchView(APIView):
@@ -241,6 +241,11 @@ class SearchView(APIView):
             print("Data", data)
 
             save_feedback(data, self.df_feedback)
+
+            if not data.get("selectedImages"):
+                print("No images")
+                return Response(send_random(data.get("query")))
+
             similar_images = get_similar(data)
             similar_images = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split('/')[-1], similar_images)
 
