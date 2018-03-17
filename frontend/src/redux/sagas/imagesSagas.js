@@ -4,7 +4,6 @@ import * as api from '../../api/imagesApi';
 import {
     getImagesSuccess,
     getImagesFailure,
-    postFeedbackSuccess,
     postFeedbackFailure
 } from '../actions/imagesActions';
 import {
