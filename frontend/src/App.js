@@ -10,7 +10,6 @@ import Gallery from 'react-photo-gallery';
 import SelectedImage from './components/SelectedImage';
 import ResizeAware from 'react-resize-aware';
 import { compose } from './utils/compose'
-import { setTimeout } from 'timers';
 
 class App extends Component {
 
