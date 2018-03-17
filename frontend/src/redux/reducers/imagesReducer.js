@@ -5,7 +5,6 @@ import {
     GET_IMAGES_SUCCESS,
     GET_IMAGES_FAILURE,
     POST_FEEDBACK_REQUEST,
-    POST_FEEDBACK_SUCCESS,
     POST_FEEDBACK_FAILURE
 } from '../constants/imagesConstants';
 
