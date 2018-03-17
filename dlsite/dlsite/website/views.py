@@ -16,14 +16,15 @@ import pandas as pd
 from recommend import get_relevant_images_rank, get_img_map
 
 ABS_PATH = path.dirname(path.abspath(__file__))
+FEEDBACK_IMG_SEP = "/"
 FEEDBACK_FILE = ABS_PATH + settings.STATIC_URL + "feedback.csv"
 FEEDBACK_COLS = ["query", "step", "image", "status"]
 print("FEEDBACK_FILE:", FEEDBACK_FILE)
 
 PATH_TO_IMAGES_FRONTEND = "mlimages/"
-PATH_TO_IMAGES = "/home/a/Desktop/Current Courses/Deep Learning 10" \
-                 "/all_images/"
-                 # "/img_classification_deep_learning/frontend/public/images"
+PATH_TO_IMAGES = ABS_PATH.split('dlsite')[0] + 'frontend/public/' + PATH_TO_IMAGES_FRONTEND
+
+print("PATH_TO_IMAGES", PATH_TO_IMAGES)
 
 indices_euclidean_path = ABS_PATH + settings.STATIC_URL + "indices_euclidean.csv"
 INDICIES = np.genfromtxt(indices_euclidean_path, delimiter=',')
@@ -49,12 +50,12 @@ def load_images_list():
     return images_titles
 
 
-def get_images(count=20):
+def get_random_images(count=20):
     """Get image titles from DB
 
     :return: list of strings
     """
-    # TODO: take random images from ClusterImage
+    # TODO: take random images from ClusterImage ==============================================
 
     images = Image.objects.all()
     subset = sample(images, count)
@@ -90,7 +91,7 @@ def send_random(q):
     :return: dict
     """
     step = 0
-    images = get_images()
+    images = get_random_images()
 
     return format_response(q, step, images)
 
@@ -108,11 +109,11 @@ def save_feedback(d, _df_feedback):
 
     res = []
     for img in selected_img:
-        img_title = img.split("/")[-1]
+        img_title = img.split(FEEDBACK_IMG_SEP)[-1]
         res.append([query, step, img_title, "1"])
 
     for img in not_selected_img:
-        img_title = img.split("/")[-1]
+        img_title = img.split(FEEDBACK_IMG_SEP)[-1]
         res.append([query, step, img_title, "0"])
 
     print("create df_tmp")
@@ -135,7 +136,7 @@ def read_feedback():
     df = pd.DataFrame({}, columns=FEEDBACK_COLS)
     df.to_csv(FEEDBACK_FILE, index=False)
     print("read_feedback")
-    print(df)
+    print(df.tail())
 
     return df
 
@@ -148,7 +149,7 @@ def get_similar(d, k=20):
         IMG_MAP = get_img_map(load_images_list())
 
     print("get selected_img")
-    selected_img = [x.split("/")[-1] for x in d.get("selectedImages")]
+    selected_img = [x.split(FEEDBACK_IMG_SEP)[-1] for x in d.get("selectedImages")]
     print(selected_img)
 
     print("IMG_MAP", len(IMG_MAP))
