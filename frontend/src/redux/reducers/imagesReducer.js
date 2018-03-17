@@ -13,7 +13,6 @@ const initialState = {
     images: null,
     step: null,
     loading: false,
-    posted: false,
     error: null
 }
 
@@ -23,7 +22,7 @@ export default function (state = initialState, action) {
             return { ...initialState, loading: true };
 
         case GET_IMAGES_SUCCESS:
-            return { ...state, loading: false, images: action.payload.images, step: action.payload.step, error: null };
+            return { loading: false, images: action.payload.images, step: action.payload.step, error: null };
 
         case GET_IMAGES_FAILURE:
             return { ...initialState, error: action.payload.error };
@@ -61,11 +60,6 @@ export default function (state = initialState, action) {
 
         case POST_FEEDBACK_REQUEST:
             return { ...state, loading: true, error: null};
-
-        case POST_FEEDBACK_SUCCESS:
-            {
-                return { ...initialState, loading: false, posted: true };
-            }
 
         case POST_FEEDBACK_FAILURE:
             return { ...initialState, error: action.payload.error };

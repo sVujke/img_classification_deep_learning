@@ -57,11 +57,6 @@ export function postFeedback() {
         type: POST_FEEDBACK_REQUEST
     }
 }
-export function postFeedbackSuccess() {
-    return {
-        type: POST_FEEDBACK_SUCCESS
-    }
-}
 export function postFeedbackFailure(error) {
     return {
         type: POST_FEEDBACK_FAILURE,

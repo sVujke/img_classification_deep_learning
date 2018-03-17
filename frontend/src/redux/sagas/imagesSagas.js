@@ -17,9 +17,9 @@ import { wrapImages, unwrapImages } from '../../utils/imageWrapper';
 // For test
 // export function* requestImages(action) {
 //     var imagedata = [];
-//     for (var i = 0; i < 41; i++) {
+//     for (var i = 0; i < 20; i++) {
 //         var str = i >= 10 ? '0000' : '00000';
-//         imagedata.push(`http://localhost:3000/mlimages/${str}${i}.jpg`)
+//         imagedata.push(`http://localhost:3000/images/${str}${i}.jpg`)
 //     }
 //     yield call(delay, 1);
 //     yield put(getImagesSuccess(wrapImages(imagedata), 2));
@@ -31,11 +31,10 @@ import { wrapImages, unwrapImages } from '../../utils/imageWrapper';
 
 
 export function* requestImages(action) {
+    //needed so the photo gallery will disappear for 1 millisec
+    //so that all the loaded images could reload again to trigger the update
     yield call(delay, 1);
-
     try {
-        //needed so the photo gallery will disappear for 1 millisec
-        //so that all the loaded images could reload again to trigger the update
         const result = yield call(
             api.getImages,
             action.payload.query
@@ -67,11 +66,8 @@ export function* postFeedback() {
             api.postFeedback,
             data
         );
-        console.log("----------------------- result")
-        console.log(result)
         if (result.status === 200) {
             yield put(getImagesSuccess(wrapImages(result.data.images), result.data.step));
-            // yield put(postFeedbackSuccess());
         }
         else {
             yield put(postFeedbackFailure(result.error));
