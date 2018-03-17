@@ -47,6 +47,7 @@ class App extends Component {
       }
       else {
         if (this.props.images) {
+          const desiredImageSize = 360
           return (
             <div style={appStyles.imageGrid}>
               <ResizeAware 
@@ -56,7 +57,7 @@ class App extends Component {
                     onClick={this.onSelectImage} 
                     ImageComponent={SelectedImage} 
                     margin={4}
-                    columns={Math.ceil(this.props.screenWidth/180)}
+                    columns={this.props.screenWidth <= desiredImageSize*2 ? 2 : (this.props.screenWidth <= desiredImageSize*4 ? 4 : 5) }
                   />
               </ResizeAware>
               <Button 
@@ -68,15 +69,7 @@ class App extends Component {
             </div>
           );
         } else {
-          if(this.props.posted) {
-            return (
-              <div style={appStyles.progressContainer}>
-                <Typography style={appStyles.successText}>
-                  Feedback was successfully posted!
-                </Typography>
-              </div>
-            );
-          } else if (this.props.error){
+          if (this.props.error){
             const { error } = this.props;
             return (
               <div style={appStyles.progressContainer}>
@@ -87,9 +80,21 @@ class App extends Component {
             </div>
             );
           }
-            else {
-            return null;
-          }
+          else {
+          return (
+            <div style={appStyles.progressContainer}>
+              <Typography style={appStyles.successText}>
+                1. Provide a search query.
+                <br></br>
+                2. Select relevant images corresponding to your query.
+                <br></br>
+                3. Submit your feedback.
+                <br></br>
+                4. Repeat
+              </Typography>
+            </div>
+          );
+        }
         }
       }
     }
@@ -155,7 +160,6 @@ function mapStateToProps(state) {
     images: state.imagesReducer.images,
     step: state.imagesReducer.step,
     loading: state.imagesReducer.loading,
-    posted: state.imagesReducer.posted,
     error: state.imagesReducer.error,
     currentSearchText: state.searchReducer.currentSearchText,
     screenWidth: state.screenWidthReducer.screenWidth

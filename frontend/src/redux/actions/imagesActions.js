@@ -4,7 +4,6 @@ import {
     GET_IMAGES_SUCCESS,
     GET_IMAGES_FAILURE,
     POST_FEEDBACK_REQUEST,
-    POST_FEEDBACK_SUCCESS,
     POST_FEEDBACK_FAILURE,
     IMAGE_LOADED
 
@@ -55,11 +54,6 @@ export function imageLoaded(image) {
 export function postFeedback() {
     return {
         type: POST_FEEDBACK_REQUEST
-    }
-}
-export function postFeedbackSuccess() {
-    return {
-        type: POST_FEEDBACK_SUCCESS
     }
 }
 export function postFeedbackFailure(error) {
