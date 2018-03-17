@@ -9,6 +9,10 @@
 # production
 /build
 
+# public
+/public/mlimages/*
+/public/images/*
+
 # misc
 .DS_Store
 .env.local
