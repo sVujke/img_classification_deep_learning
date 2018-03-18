@@ -51,7 +51,7 @@ def main():
 
 	img_map = get_img_map(img_lst)
 
-	distances, indices = get_indices_distances(data, metric=distance_metric, nn=n_neighbors, trees=n_trees)
+	indices, distances = get_indices_distances(data, metric=distance_metric, nn=n_neighbors, trees=n_trees)
 
 	np.savetxt("{}/distances_{}.csv".format(output_dir,distance_metric), distances, delimiter=",")
 
