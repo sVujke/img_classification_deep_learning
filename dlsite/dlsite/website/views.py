@@ -178,25 +178,12 @@ def read_feedback():
 
 
 def get_similar_images(images, k=20):
-    print("run get_relevant_images_rank")
-    images_list = get_relevant_imgs(images, IMG_MAP, INDICIES, DISTANCES,
-                                    k, form="list", rank=True, img_dir=PATH_TO_IMAGES)
-    # images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
-    #                                        k, operation="union", img_dir=PATH_TO_IMAGES)
-    print("return", len(images_list))
-    return images_list
-
-
-def get_similar(d, k=20):
     global IMG_MAP
 
     print("run get_similar")
     if IMG_MAP is None:
         IMG_MAP = get_img_map(load_images_list())
 
-    print("get selected_img")
-    selected_img = [x.split(FEEDBACK_IMG_SEP)[-1] for x in d.get("selectedImages")]
-    print(selected_img)
     print("IMG_MAP", len(IMG_MAP))
     print(IMG_MAP.items()[:10])
     print("INDICIES", len(INDICIES))
@@ -207,6 +194,20 @@ def get_similar(d, k=20):
     print(k)
     print("PATH_TO_IMAGES")
     print(PATH_TO_IMAGES)
+    print("run get_relevant_images_rank")
+    images_list = get_relevant_imgs(images, IMG_MAP, INDICIES, DISTANCES,
+                                    k, form="list", rank=True, img_dir=PATH_TO_IMAGES)
+    # images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
+    #                                        k, operation="union", img_dir=PATH_TO_IMAGES)
+    print("return", len(images_list))
+    return images_list
+
+
+def get_similar(d, k=20):
+    print("get selected_img")
+    selected_img = [x.split(FEEDBACK_IMG_SEP)[-1] for x in d.get("selectedImages")]
+    print(selected_img)
+
     return get_similar_images(selected_img, k)
 
 
