@@ -109,14 +109,21 @@ def send_based_on_feedback(q, _df_feedback):
     ratio_list = []
     for image in unique_images:
         total_times_shown = len(filtered.loc[filtered['image'] == image])
-        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == True)])
-        ratio = times_selected/total_times_shown
+        if total_times_shown == 0:
+            ratio_list.append(0.0)
+            continue
+        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
+        ratio = times_selected/float(total_times_shown)
         ratio_list.append(ratio)
     ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
     ratio_df = ratio_df.loc[ratio_df['ratio'] > 0]
     ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
 
     length = min(len(ratio_df), 5)
+    if length == 0:
+        # TODO: count those pics that were not selected to fetch images far from them
+        return format_response(q, 0, get_random_images())
+
     images = ratio_df.head(length)['image']
 
     needed = 20 - length
@@ -128,8 +135,7 @@ def send_based_on_feedback(q, _df_feedback):
 
     filtered_similar = [x for x in similar if x not in ret_val][:needed]
     ret_val.extend(filtered_similar)
-    step = 0
-    return format_response(q, step, ret_val)
+    return format_response(q, 0, ret_val)
 
 
 def save_feedback(d, _df_feedback):
@@ -178,25 +184,12 @@ def read_feedback():
 
 
 def get_similar_images(images, k=20):
-    print("run get_relevant_images_rank")
-    images_list = get_relevant_imgs(images, IMG_MAP, INDICIES, DISTANCES,
-                                    k, form="list", rank=True, img_dir=PATH_TO_IMAGES)
-    # images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
-    #                                        k, operation="union", img_dir=PATH_TO_IMAGES)
-    print("return", len(images_list))
-    return images_list
-
-
-def get_similar(d, k=20):
     global IMG_MAP
 
     print("run get_similar")
     if IMG_MAP is None:
         IMG_MAP = get_img_map(load_images_list())
 
-    print("get selected_img")
-    selected_img = [x.split(FEEDBACK_IMG_SEP)[-1] for x in d.get("selectedImages")]
-    print(selected_img)
     print("IMG_MAP", len(IMG_MAP))
     print(IMG_MAP.items()[:10])
     print("INDICIES", len(INDICIES))
@@ -207,6 +200,20 @@ def get_similar(d, k=20):
     print(k)
     print("PATH_TO_IMAGES")
     print(PATH_TO_IMAGES)
+    print("run get_relevant_images_rank")
+    images_list = get_relevant_imgs(images, IMG_MAP, INDICIES, DISTANCES,
+                                    k, form="list", rank=True, img_dir=PATH_TO_IMAGES)
+    # images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
+    #                                        k, operation="union", img_dir=PATH_TO_IMAGES)
+    print("return", len(images_list))
+    return images_list
+
+
+def get_similar(d, k=20):
+    print("get selected_img")
+    selected_img = [x.split(FEEDBACK_IMG_SEP)[-1] for x in d.get("selectedImages")]
+    print(selected_img)
+
     return get_similar_images(selected_img, k)
 
 
