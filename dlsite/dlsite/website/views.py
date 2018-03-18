@@ -201,7 +201,7 @@ def ci_lower_bound(positive, total, confidence = 0.95):
     """
     #http://www.evanmiller.org/how-not-to-sort-by-average-rating.html
 
-    if total == 0:
+    if total == 0 or positive > total:
         return 0
 
     z = 1.96#Statistics2.pnormaldist(1-(1-confidence)/2)
@@ -210,6 +210,11 @@ def ci_lower_bound(positive, total, confidence = 0.95):
 
 
 def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_threshold=0.5, threshold_steps=3, lower_threshold=0.125):
+    for i in range(1,20):
+        for j in range(0, 20):
+            if (j > i ):
+                continue
+            print("pos=",j," tot=",i," ratio=", ci_lower_bound(j,i))
     filtered = _df_feedback.loc[_df_feedback['query'] == q]
     unique_images = filtered['image'].unique().tolist()
     ratio_list = []
