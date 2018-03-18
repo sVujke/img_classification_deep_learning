@@ -40,6 +40,34 @@ DISTANCES = np.genfromtxt(distances_euclidean_path, delimiter=',')
 
 IMG_MAP = None
 
+inception_layer_path = ABS_PATH + settings.STATIC_URL + "inception_output_layer2"
+print("READ inception_layer_path")
+df_in = pd.read_pickle(inception_layer_path)
+df_in.columns = ['img', 'output_layer', 'scores']
+print("DROP column - output_layer")
+df_in.drop('output_layer', axis=1, inplace=True)
+print(df_in.head())
+known_words = defaultdict(list)
+
+
+def prepare_known_words():
+    global df_in, known_words
+    print("create dict of known words")
+    rows = df_in.shape[0]
+    for i in range(rows):
+        row = df_in.iloc[i]
+        img_title = row['img']
+        descriptions_list = row['scores'].items()
+        for d, score in descriptions_list:
+            for word in d.split(' '):
+                known_words[word].append((img_title, score))
+
+    print('==================== known_words', len(known_words))
+    print("del df_in")
+    del df_in
+    print("done")
+prepare_known_words()
+
 
 def index(request):
     # images_list = Image.objects.all()
@@ -49,7 +77,7 @@ def index(request):
 
 
 def load_images_list():
-    images_titles = [f for f in listdir(PATH_TO_IMAGES) if path.isfile(f) and f.endswith(".jpg")]
+    images_titles = [f for f in listdir(PATH_TO_IMAGES) if f.endswith(".jpg")]
     images_titles = sorted(images_titles, reverse=False)
     return images_titles
 
@@ -153,16 +181,15 @@ def read_feedback():
 
     df = pd.DataFrame({}, columns=FEEDBACK_COLS)
     df.to_csv(FEEDBACK_FILE, index=False)
-    print("read_feedback")
-    print(df.tail())
-
     return df
+df_feedback = read_feedback()
+print(df_feedback.head())
 
 
 def get_similar_images(images, k=20):
     global IMG_MAP
 
-    print("run get_similar")
+    print("run get_similar_images")
     if IMG_MAP is None:
         IMG_MAP = get_img_map(load_images_list())
 
@@ -275,12 +302,6 @@ def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_thres
 
 class SearchView(APIView):
 
-    def __init__(self):
-        print("======================================== init")
-        self.df_feedback = read_feedback()
-        print(self.df_feedback.head())
-        print("======================================== end init")
-
     def get(self, request):
         url_name = resolve(self.request.path).url_name
         print("URL name", url_name)
@@ -298,10 +319,13 @@ class SearchView(APIView):
                 # TODO: return normal results
                 print("Keyword exists")
 
-                return Response(send_based_on_feedback(query, self.df_feedback))
+                return Response(send_based_on_feedback(query, df_feedback))
 
             else:
                 print("Send random")
+                print("SHOW known_words")
+                print(known_words.keys()[:10])
+
                 Keyword(keyword=query).save()
                 return Response(send_random(query))
 
@@ -350,7 +374,7 @@ class SearchView(APIView):
             data = request.data
             print("Data", data)
 
-            save_feedback(data, self.df_feedback)
+            save_feedback(data, df_feedback)
 
             if not data.get("selectedImages"):
                 print("No images")
