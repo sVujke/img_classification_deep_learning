@@ -9,6 +9,10 @@ from os import listdir
 from os.path import isfile, join
 
 
+def index_from_image_name(image_name):
+    return int(image_name.split("/")[-1].split(".jpg")[0])
+
+
 def load_img_names(path):
     """ Returns list of img names on specified path
     """
@@ -18,16 +22,6 @@ def load_img_names(path):
     df = df.sort_values("img")
     return df["img"].values
 
-
-def get_img_map(img_names):
-    """ Maps ordererd integer values to image names, example img  2 > 000002.jpg, 45 > 000045.jpg
-    """
-    img_map = {}
-    for i in range(0, len(img_names)):
-        img_map[i] = img_names[i]
-    return img_map
-
-
 def get_key(dic, dic_val):
     """ Returns key for value in dictionary
     """
@@ -36,7 +30,7 @@ def get_key(dic, dic_val):
             return k
 
 
-def get_similar_imgs(img_name, img_map, indices, distances, k, form="df", img_dir=None):
+def get_similar_imgs(img_name, indices, distances, k, form="df", img_dir=None):
     """ Returns list or df of k similar images, with or without path
         Parameters:
         1. img_name - "00001.jpg"
@@ -48,9 +42,8 @@ def get_similar_imgs(img_name, img_map, indices, distances, k, form="df", img_di
         7. img_dir - path to directory of images
     """
     print("+" * 30)
-    # print(img_map)
     print(img_name)
-    index = int(img_name.split(".jpg")[0])#get_key(img_map, img_name)
+    index = index_from_image_name(img_name)#get_key(img_map, img_name)
     print('index', index)
     distances = distances[index][1:k + 1]
     print(distances)
@@ -76,7 +69,7 @@ def get_similar_imgs(img_name, img_map, indices, distances, k, form="df", img_di
 
 # In[15]:
 
-def get_relevant_imgs(img_lst, img_map, indices, distances, k, form="list", rank=True, img_dir=None):
+def get_relevant_imgs(img_lst, indices, distances, k, form="list", rank=True, img_dir=None):
     """ Returns list or df of k similar images, with or without path
         Parameters:
         1. img_names - ["00001.jpg","00002.jpg"]
@@ -90,7 +83,7 @@ def get_relevant_imgs(img_lst, img_map, indices, distances, k, form="list", rank
     """
     df_lst = []
     for img in img_lst:
-        df_lst.append(get_similar_imgs(img, img_map, indices, distances, k, img_dir=img_dir))
+        df_lst.append(get_similar_imgs(img, indices, distances, k, img_dir=img_dir))
 
     df = pd.concat(df_lst)
     if rank:

@@ -15,7 +15,7 @@ from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, I
 import numpy as np
 import pandas as pd
 
-from recommend import get_relevant_imgs, get_img_map
+from recommend import get_relevant_imgs
 import math
 
 
@@ -187,14 +187,10 @@ print(df_feedback.head())
 
 
 def get_similar_images(images, k=20):
-    global IMG_MAP
 
     print("run get_similar_images")
-    if IMG_MAP is None:
-        IMG_MAP = get_img_map(load_images_list())
 
-    print("IMG_MAP", len(IMG_MAP))
-    print(IMG_MAP.items()[:10])
+
     print("INDICIES", len(INDICIES))
     print(INDICIES)
     print("DISTANCES", len(DISTANCES))
@@ -204,7 +200,7 @@ def get_similar_images(images, k=20):
     print("PATH_TO_IMAGES")
     print(PATH_TO_IMAGES)
     print("run get_relevant_images_rank")
-    images_list = get_relevant_imgs(images, IMG_MAP, INDICIES, DISTANCES,
+    images_list = get_relevant_imgs(images, INDICIES, DISTANCES,
                                     k, form="list", rank=True, img_dir=PATH_TO_IMAGES)
     # images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
     #                                        k, operation="union", img_dir=PATH_TO_IMAGES)
