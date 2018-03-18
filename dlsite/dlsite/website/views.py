@@ -96,6 +96,42 @@ def send_random(q):
     return format_response(q, step, images)
 
 
+def send_based_on_feedback(q, _df_feedback):
+    """Return dict with images based on saved feedback
+
+    :param q: query string
+    :param _df_feedback: feedback df
+    :return: dict
+    """
+    print("============================== run send_based_on_feedback")
+    filtered = _df_feedback.loc[_df_feedback['query'] == q]
+    unique_images = filtered['image'].unique().tolist()
+    ratio_list = []
+    for image in unique_images:
+        total_times_shown = len(filtered.loc[filtered['image'] == image])
+        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == True)])
+        ratio = times_selected/total_times_shown
+        ratio_list.append(ratio)
+    ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
+    ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
+
+    length = min(len(ratio_df), 5)
+    images = ratio_df.head(length)['image']
+
+    needed = 20 - length
+    similar = get_similar_images(images, needed)
+    similar = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split('/')[-1], similar)
+
+    ret_val = []
+    for i in images:
+        ret_val.append(PATH_TO_IMAGES_FRONTEND + i)
+
+    ret_val.extend(similar)
+
+    step = 0
+    return format_response(q, step, ret_val)
+
+
 def save_feedback(d, _df_feedback):
     print("============================== run save_feedback")
     query = d.get("query")
@@ -141,6 +177,16 @@ def read_feedback():
     return df
 
 
+def get_similar_images(images, k=20):
+    print("run get_relevant_images_rank")
+    images_list = get_relevant_imgs(images, IMG_MAP, INDICIES, DISTANCES,
+                                    k, form="list", rank=True, img_dir=PATH_TO_IMAGES)
+    # images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
+    #                                        k, operation="union", img_dir=PATH_TO_IMAGES)
+    print("return", len(images_list))
+    return images_list
+
+
 def get_similar(d, k=20):
     global IMG_MAP
 
@@ -151,7 +197,6 @@ def get_similar(d, k=20):
     print("get selected_img")
     selected_img = [x.split(FEEDBACK_IMG_SEP)[-1] for x in d.get("selectedImages")]
     print(selected_img)
-
     print("IMG_MAP", len(IMG_MAP))
     print(IMG_MAP.items()[:10])
     print("INDICIES", len(INDICIES))
@@ -162,13 +207,8 @@ def get_similar(d, k=20):
     print(k)
     print("PATH_TO_IMAGES")
     print(PATH_TO_IMAGES)
-    print("run get_relevant_images_rank")
-    images_list = get_relevant_imgs(selected_img, IMG_MAP, INDICIES, DISTANCES,
-                                    k, form="list", rank=True, img_dir=PATH_TO_IMAGES)
-    # images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
-    #                                        k, operation="union", img_dir=PATH_TO_IMAGES)
-    print("return", len(images_list))
-    return images_list
+    return get_similar_images(selected_img, k)
+
 
 
 class SearchView(APIView):
@@ -196,8 +236,7 @@ class SearchView(APIView):
                 # TODO: return normal results
                 print("Keyword exists")
 
-                return Response(send_random(query))
-                # return Response({"query": query})
+                return Response(send_based_on_feedback(query, self.df_feedback))
 
             else:
                 print("Send random")
