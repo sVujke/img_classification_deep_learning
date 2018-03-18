@@ -182,8 +182,7 @@ def read_feedback():
     df = pd.DataFrame({}, columns=FEEDBACK_COLS)
     df.to_csv(FEEDBACK_FILE, index=False)
     return df
-df_feedback = read_feedback()
-print(df_feedback.head())
+
 
 
 def get_similar_images(images, k=20):
@@ -244,7 +243,6 @@ def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_thres
         ratio = ci_lower_bound(times_selected, total_times_shown)
         ratio_list.append(ratio)
     ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
-
     """threshold_ratio_df = ratio_df.loc[ratio_df['ratio'] > 0.5]
     threshold_ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
     length = min(len(threshold_ratio_df), count)
@@ -298,6 +296,9 @@ def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_thres
 
 class SearchView(APIView):
 
+    def __init__(self):
+        self.df_feedback = read_feedback()
+
     def get(self, request):
         url_name = resolve(self.request.path).url_name
         print("URL name", url_name)
@@ -312,9 +313,8 @@ class SearchView(APIView):
             print("Search for", query)
 
             if keyword_exists(query):
-                # TODO: return normal results
                 print("Keyword exists")
-                return Response(send_based_on_feedback(query, df_feedback))
+                return Response(send_based_on_feedback(query, self.df_feedback))
 
             else:
                 print("Send random")
@@ -369,7 +369,7 @@ class SearchView(APIView):
             data = request.data
             print("Data", data)
 
-            save_feedback(data, df_feedback)
+            save_feedback(data, self.df_feedback)
 
             if not data.get("selectedImages"):
                 print("No images")
