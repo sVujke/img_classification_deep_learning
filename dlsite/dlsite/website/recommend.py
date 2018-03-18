@@ -50,7 +50,7 @@ def get_similar_imgs(img_name, img_map, indices, distances, k, form="df", img_di
     print("+" * 30)
     # print(img_map)
     print(img_name)
-    index = get_key(img_map, img_name)
+    index = int(img_name.split(".jpg")[0])#get_key(img_map, img_name)
     print('index', index)
     distances = distances[index][1:k + 1]
     print(distances)
