@@ -13,7 +13,7 @@ from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, I
 
 import numpy as np
 import pandas as pd
-from recommend import get_relevant_images_rank, get_img_map
+from recommend import get_relevant_imgs, get_img_map
 
 ABS_PATH = path.dirname(path.abspath(__file__))
 FEEDBACK_IMG_SEP = "/"
@@ -27,7 +27,7 @@ PATH_TO_IMAGES = ABS_PATH.split('dlsite')[0] + 'frontend/public/' + PATH_TO_IMAG
 print("PATH_TO_IMAGES", PATH_TO_IMAGES)
 
 indices_euclidean_path = ABS_PATH + settings.STATIC_URL + "indices_euclidean.csv"
-INDICIES = np.genfromtxt(indices_euclidean_path, delimiter=',')
+INDICIES = np.genfromtxt(indices_euclidean_path, delimiter=',', dtype=str)
 # INDICIES = INDICIES[:1000]
 
 distances_euclidean_path = ABS_PATH + settings.STATIC_URL + "distances_euclidean.csv"
@@ -163,8 +163,10 @@ def get_similar(d, k=20):
     print("PATH_TO_IMAGES")
     print(PATH_TO_IMAGES)
     print("run get_relevant_images_rank")
-    images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
-                                           k, operation="union", img_dir=PATH_TO_IMAGES)
+    images_list = get_relevant_imgs(selected_img, IMG_MAP, INDICIES, DISTANCES,
+                                    k, form="list", rank=True, img_dir=PATH_TO_IMAGES)
+    # images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
+    #                                        k, operation="union", img_dir=PATH_TO_IMAGES)
     print("return", len(images_list))
     return images_list
 
