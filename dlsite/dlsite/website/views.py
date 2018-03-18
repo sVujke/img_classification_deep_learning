@@ -47,7 +47,7 @@ def index(request):
 
 
 def load_images_list():
-    images_titles = [f for f in listdir(PATH_TO_IMAGES)]
+    images_titles = [f for f in listdir(PATH_TO_IMAGES) if path.isfile(f) and f.endswith(".jpg")]
     images_titles = sorted(images_titles, reverse=False)
     return images_titles
 
