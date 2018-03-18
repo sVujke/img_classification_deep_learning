@@ -252,6 +252,7 @@ def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_thres
         i += 1
         current_threshold -= threshold_decrement
 
+    length = min(20, length)
     if length == 0:
         # TODO: count those pics that were not selected to fetch images far from them
         return None
