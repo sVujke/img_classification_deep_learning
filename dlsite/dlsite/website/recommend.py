@@ -6,11 +6,11 @@ import pandas as pd
 import numpy as np
 from IPython.display import Image, display
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, sep
 
 
 def index_from_image_name(image_name):
-    return int(image_name.split("/")[-1].split(".jpg")[0])
+    return int(image_name.split(sep)[-1].split(".jpg")[0])
 
 
 def load_img_names(path):
@@ -21,13 +21,6 @@ def load_img_names(path):
     df.columns = ["img"]
     df = df.sort_values("img")
     return df["img"].values
-
-def get_key(dic, dic_val):
-    """ Returns key for value in dictionary
-    """
-    for k, v in dic.items():  # for name, age in list.items():  (for Python 3.x)
-        if v == dic_val:
-            return k
 
 
 def get_similar_imgs(img_name, indices, distances, k, form="df", img_dir=None):

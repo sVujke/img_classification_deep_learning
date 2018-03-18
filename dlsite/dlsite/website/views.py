@@ -20,13 +20,13 @@ import math
 
 
 ABS_PATH = path.dirname(path.abspath(__file__))
-FEEDBACK_IMG_SEP = "/"
+FEEDBACK_IMG_SEP = path.sep
 FEEDBACK_FILE = ABS_PATH + settings.STATIC_URL + "feedback.csv"
 FEEDBACK_COLS = ["query", "step", "image", "status"]
 print("FEEDBACK_FILE:", FEEDBACK_FILE)
 
-PATH_TO_IMAGES_FRONTEND = "mlimages/"
-PATH_TO_IMAGES = ABS_PATH.split('dlsite')[0] + 'frontend/public/' + PATH_TO_IMAGES_FRONTEND
+PATH_TO_IMAGES_FRONTEND = 'mlimages' + path.sep
+PATH_TO_IMAGES = ABS_PATH.split('dlsite')[0] + 'frontend' + path.sep + 'public' + path.sep + PATH_TO_IMAGES_FRONTEND
 
 print("PATH_TO_IMAGES", PATH_TO_IMAGES)
 
@@ -286,7 +286,7 @@ def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_thres
 
     needed = count - length
     similar = get_similar_images(images, count)
-    similar = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split('/')[-1], similar)
+    similar = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split(path.sep)[-1], similar)
     ret_val = []
     for i in images:
         ret_val.append(PATH_TO_IMAGES_FRONTEND + i)
@@ -314,7 +314,6 @@ class SearchView(APIView):
             if keyword_exists(query):
                 # TODO: return normal results
                 print("Keyword exists")
-
                 return Response(send_based_on_feedback(query, df_feedback))
 
             else:
