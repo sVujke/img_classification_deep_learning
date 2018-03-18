@@ -8,11 +8,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from random import sample
+from collections import defaultdict
 from os import listdir, curdir, path
 from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, ImageCluster
 
 import numpy as np
 import pandas as pd
+
 from recommend import get_relevant_imgs, get_img_map
 
 ABS_PATH = path.dirname(path.abspath(__file__))
@@ -210,9 +212,15 @@ class SearchView(APIView):
             print("count images", len(images_list))
             print("first 10", images_list[:10])
 
-            for img in images_list:
-                if img.endswith(".jpg"):
-                    Image(title=img).save()
+            images_list = [img for img in images_list if img.endswith(".jpg")]
+            bulk_list = [Image(title=img) for img in images_list]
+            Image.objects.bulk_create(bulk_list)
+
+            # for idx, img in enumerate(images_list):
+            #     if idx % 100 == 0:
+            #         print("======", idx)
+            #     if img.endswith(".jpg"):
+            #         Image(title=img).save()
 
             return Response({"status": "images stored",
                              "length": len(images_list)})
@@ -262,4 +270,4 @@ class SearchView(APIView):
             data = request.data
             print("Data", data)
 
-        return Response()
+        return Response({"error": "post error"})
