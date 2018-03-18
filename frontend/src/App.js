@@ -74,7 +74,7 @@ class App extends Component {
             return (
               <div style={appStyles.progressContainer}>
                 <Typography style={appStyles.errorText}>
-                  {error.message}<br></br>{error.response ? error.response : null}
+                  {error.message}
                 </Typography>
                 
             </div>
