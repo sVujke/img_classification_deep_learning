@@ -209,7 +209,7 @@ def ci_lower_bound(positive, total, confidence = 0.95):
     return (phat + z*z/(2*total) - z * math.sqrt((phat*(1-phat)+z*z/(4*total))/total))/(1+z*z/total)
 
 
-def get_relevant_images_based_on_feedback(q, _df_feedback):
+def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_threshold=0.5, threshold_steps=3, lower_threshold=0.125):
     filtered = _df_feedback.loc[_df_feedback['query'] == q]
     unique_images = filtered['image'].unique().tolist()
     ratio_list = []
@@ -219,17 +219,48 @@ def get_relevant_images_based_on_feedback(q, _df_feedback):
         ratio = ci_lower_bound(times_selected, total_times_shown)
         ratio_list.append(ratio)
     ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
-    ratio_df = ratio_df.loc[ratio_df['ratio'] > 0]
-    ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
-    length = min(len(ratio_df), 5)
+
+    """threshold_ratio_df = ratio_df.loc[ratio_df['ratio'] > 0.5]
+    threshold_ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
+    length = min(len(threshold_ratio_df), count)
+    if length == 0:
+        threshold_ratio_df = ratio_df.loc[ratio_df['ratio'] > 0.25]
+        threshold_ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
+        length = min(len(threshold_ratio_df), count/2)
+        if length == 0:
+            threshold_ratio_df = ratio_df.loc[ratio_df['ratio'] > 0.125]
+            threshold_ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
+            length = min(len(threshold_ratio_df), count / 4)
+            if length == 0:
+                # TODO: count those pics that were not selected to fetch images far from them
+                return None
+    """
+
+    threshold_decrement = (upper_threshold - lower_threshold)/threshold_steps
+    current_threshold = upper_threshold
+    threshold_ratio_df = pd.DataFrame({}, columns=['image', 'ratio'])
+    length = 0
+    i = 1
+    while current_threshold >= lower_threshold and length < count:
+        ddf = ratio_df.loc[ratio_df['ratio'] >= current_threshold]
+        ddf.sort_values(by='ratio', ascending=False, inplace=True)
+        ddf_len = len(ddf)
+        if ddf_len > 0:
+            threshold_ratio_df = pd.concat([threshold_ratio_df, ddf])
+            length += min(ddf_len, count/i)
+            ratio_df = ratio_df.ix[ratio_df['ratio'] < current_threshold]
+        i += 1
+        current_threshold -= threshold_decrement
+
+    length = min(20, length)
     if length == 0:
         # TODO: count those pics that were not selected to fetch images far from them
         return None
 
-    images = ratio_df.head(length)['image']
+    images = threshold_ratio_df.head(length)['image']
 
-    needed = 20 - length
-    similar = get_similar_images(images, 20)
+    needed = count - length
+    similar = get_similar_images(images, count)
     similar = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split('/')[-1], similar)
     ret_val = []
     for i in images:
