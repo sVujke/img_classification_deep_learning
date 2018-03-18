@@ -5,7 +5,7 @@ import os
 from os.path import join
 import gc
 import sys 
-
+from output_layer import inception
 path="../data/annoy_test/index.ann"
 path_load = "../data/annoy_test/index.ann"
 
@@ -68,8 +68,6 @@ def load_index(path, vector_size=2048):
 
 def main():
 
-    sys.path.append('../output_layer/inception.py')
-
     data, img_lst = load_data_np("../data/transfer_layer")
 
     t = build_Index(data, len(data[0]))
@@ -78,7 +76,7 @@ def main():
 
     n = gc.collect()
 
-    t = load_index(path_load)
+    inception.maybe_download()
 
     x = t.get_nns_by_vector(data[0], n=50)
 
