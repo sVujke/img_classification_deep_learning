@@ -209,7 +209,7 @@ def ci_lower_bound(positive, total, confidence = 0.95):
     return (phat + z*z/(2*total) - z * math.sqrt((phat*(1-phat)+z*z/(4*total))/total))/(1+z*z/total)
 
 
-def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_threshold=0.5, threshold_steps=4, lower_threshold=0.125):
+def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_threshold=0.5, threshold_steps=3, lower_threshold=0.125):
     filtered = _df_feedback.loc[_df_feedback['query'] == q]
     unique_images = filtered['image'].unique().tolist()
     ratio_list = []
