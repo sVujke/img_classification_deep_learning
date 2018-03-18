@@ -109,14 +109,21 @@ def send_based_on_feedback(q, _df_feedback):
     ratio_list = []
     for image in unique_images:
         total_times_shown = len(filtered.loc[filtered['image'] == image])
-        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == True)])
-        ratio = times_selected/total_times_shown
+        if total_times_shown == 0:
+            ratio_list.append(0.0)
+            continue
+        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
+        ratio = times_selected/float(total_times_shown)
         ratio_list.append(ratio)
     ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
     ratio_df = ratio_df.loc[ratio_df['ratio'] > 0]
     ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
 
     length = min(len(ratio_df), 5)
+    if length == 0:
+        # TODO: count those pics that were not selected to fetch images far from them
+        return format_response(q, 0, get_random_images())
+
     images = ratio_df.head(length)['image']
 
     needed = 20 - length
@@ -128,8 +135,7 @@ def send_based_on_feedback(q, _df_feedback):
 
     filtered_similar = [x for x in similar if x not in ret_val][:needed]
     ret_val.extend(filtered_similar)
-    step = 0
-    return format_response(q, step, ret_val)
+    return format_response(q, 0, ret_val)
 
 
 def save_feedback(d, _df_feedback):
