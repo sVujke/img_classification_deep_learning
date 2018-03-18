@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 
 from recommend import get_relevant_imgs, get_img_map
+import math
+
 
 ABS_PATH = path.dirname(path.abspath(__file__))
 FEEDBACK_IMG_SEP = "/"
@@ -47,7 +49,7 @@ def index(request):
 
 
 def load_images_list():
-    images_titles = [f for f in listdir(PATH_TO_IMAGES)]
+    images_titles = [f for f in listdir(PATH_TO_IMAGES) if path.isfile(f) and f.endswith(".jpg")]
     images_titles = sorted(images_titles, reverse=False)
     return images_titles
 
@@ -98,6 +100,20 @@ def send_random(q):
     return format_response(q, step, images)
 
 
+def send_based_on_feedback(q, _df_feedback):
+    """Return dict with images based on saved feedback
+
+    :param q: query string
+    :param _df_feedback: feedback df
+    :return: dict
+    """
+
+    images = get_relevant_images_based_on_feedback(q, _df_feedback)
+    if images is None:
+        images = get_random_images()
+    return format_response(q, 0, images)
+
+
 def save_feedback(d, _df_feedback):
     print("============================== run save_feedback")
     query = d.get("query")
@@ -143,16 +159,12 @@ def read_feedback():
     return df
 
 
-def get_similar(d, k=20):
+def get_similar_images(images, k=20):
     global IMG_MAP
 
     print("run get_similar")
     if IMG_MAP is None:
         IMG_MAP = get_img_map(load_images_list())
-
-    print("get selected_img")
-    selected_img = [x.split(FEEDBACK_IMG_SEP)[-1] for x in d.get("selectedImages")]
-    print(selected_img)
 
     print("IMG_MAP", len(IMG_MAP))
     print(IMG_MAP.items()[:10])
@@ -165,12 +177,100 @@ def get_similar(d, k=20):
     print("PATH_TO_IMAGES")
     print(PATH_TO_IMAGES)
     print("run get_relevant_images_rank")
-    images_list = get_relevant_imgs(selected_img, IMG_MAP, INDICIES, DISTANCES,
+    images_list = get_relevant_imgs(images, IMG_MAP, INDICIES, DISTANCES,
                                     k, form="list", rank=True, img_dir=PATH_TO_IMAGES)
     # images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
     #                                        k, operation="union", img_dir=PATH_TO_IMAGES)
     print("return", len(images_list))
     return images_list
+
+
+def get_similar(d, k=20):
+    print("get selected_img")
+    selected_img = [x.split(FEEDBACK_IMG_SEP)[-1] for x in d.get("selectedImages")]
+    print(selected_img)
+
+    return get_similar_images(selected_img, k)
+
+
+def ci_lower_bound(positive, total, confidence = 0.95):
+    """
+
+    :param positive: number of positive votes
+    :param total: total number of votes
+    :param confidence: confidence interval
+    :return:
+    """
+    #http://www.evanmiller.org/how-not-to-sort-by-average-rating.html
+
+    if total == 0 or positive > total:
+        return 0
+
+    z = 1.96#Statistics2.pnormaldist(1-(1-confidence)/2)
+    phat = 1.0*positive/total
+    return (phat + z*z/(2*total) - z * math.sqrt((phat*(1-phat)+z*z/(4*total))/total))/(1+z*z/total)
+
+
+def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_threshold=0.5, threshold_steps=3, lower_threshold=0.125):
+    filtered = _df_feedback.loc[_df_feedback['query'] == q]
+    unique_images = filtered['image'].unique().tolist()
+    ratio_list = []
+    for image in unique_images:
+        total_times_shown = len(filtered.loc[filtered['image'] == image])
+        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
+        ratio = ci_lower_bound(times_selected, total_times_shown)
+        ratio_list.append(ratio)
+    ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
+
+    """threshold_ratio_df = ratio_df.loc[ratio_df['ratio'] > 0.5]
+    threshold_ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
+    length = min(len(threshold_ratio_df), count)
+    if length == 0:
+        threshold_ratio_df = ratio_df.loc[ratio_df['ratio'] > 0.25]
+        threshold_ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
+        length = min(len(threshold_ratio_df), count/2)
+        if length == 0:
+            threshold_ratio_df = ratio_df.loc[ratio_df['ratio'] > 0.125]
+            threshold_ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
+            length = min(len(threshold_ratio_df), count / 4)
+            if length == 0:
+                # TODO: count those pics that were not selected to fetch images far from them
+                return None
+    """
+
+    threshold_decrement = (upper_threshold - lower_threshold)/threshold_steps
+    current_threshold = upper_threshold
+    threshold_ratio_df = pd.DataFrame({}, columns=['image', 'ratio'])
+    length = 0
+    i = 1
+    while current_threshold >= lower_threshold and length < count:
+        ddf = ratio_df.loc[ratio_df['ratio'] >= current_threshold]
+        ddf.sort_values(by='ratio', ascending=False, inplace=True)
+        ddf_len = len(ddf)
+        if ddf_len > 0:
+            threshold_ratio_df = pd.concat([threshold_ratio_df, ddf])
+            length += min(ddf_len, count/i)
+            ratio_df = ratio_df.ix[ratio_df['ratio'] < current_threshold]
+        i += 1
+        current_threshold -= threshold_decrement
+
+    length = min(20, length)
+    if length == 0:
+        # TODO: count those pics that were not selected to fetch images far from them
+        return None
+
+    images = threshold_ratio_df.head(length)['image']
+
+    needed = count - length
+    similar = get_similar_images(images, count)
+    similar = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split('/')[-1], similar)
+    ret_val = []
+    for i in images:
+        ret_val.append(PATH_TO_IMAGES_FRONTEND + i)
+
+    filtered_similar = [x for x in similar if x not in ret_val][:needed]
+    ret_val.extend(filtered_similar)
+    return ret_val
 
 
 class SearchView(APIView):
@@ -198,8 +298,7 @@ class SearchView(APIView):
                 # TODO: return normal results
                 print("Keyword exists")
 
-                return Response(send_random(query))
-                # return Response({"query": query})
+                return Response(send_based_on_feedback(query, self.df_feedback))
 
             else:
                 print("Send random")

@@ -3,7 +3,10 @@ __pycache__/
 
 all_imgs/
 output_layer/inception_output
+dlsite/dlsite/website/static/
+frontend/public/mages/
 data/
+
 
 .ipynb_checkpoints
 .idea

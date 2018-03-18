@@ -120,3 +120,6 @@ def display_imgs(img_dir, img_list):
     """
     for img in img_list:
         display_img(img_dir, img)
+
+
+
