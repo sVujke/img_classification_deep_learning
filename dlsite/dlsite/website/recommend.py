@@ -7,6 +7,8 @@ import numpy as np
 from IPython.display import Image, display
 from os import listdir
 from os.path import isfile, join
+from views import get_similar_images, PATH_TO_IMAGES_FRONTEND
+import math
 
 
 def load_img_names(path):
@@ -120,3 +122,52 @@ def display_imgs(img_dir, img_list):
     """
     for img in img_list:
         display_img(img_dir, img)
+
+
+def ci_lower_bound(positive, total, confidence = 0.95):
+    """
+
+    :param positive: number of positive votes
+    :param total: total number of votes
+    :param confidence: confidence interval
+    :return:
+    """
+    #http://www.evanmiller.org/how-not-to-sort-by-average-rating.html
+
+    if total == 0:
+        return 0
+
+    z = 1.96#Statistics2.pnormaldist(1-(1-confidence)/2)
+    phat = 1.0*positive/total
+    return (phat + z*z/(2*total) - z * math.sqrt((phat*(1-phat)+z*z/(4*total))/total))/(1+z*z/total)
+
+
+def get_relevant_images_based_on_feedback(q, _df_feedback):
+    filtered = _df_feedback.loc[_df_feedback['query'] == q]
+    unique_images = filtered['image'].unique().tolist()
+    ratio_list = []
+    for image in unique_images:
+        total_times_shown = len(filtered.loc[filtered['image'] == image])
+        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
+        ratio = ci_lower_bound(times_selected, total_times_shown)
+        ratio_list.append(ratio)
+    ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
+    ratio_df = ratio_df.loc[ratio_df['ratio'] > 0]
+    ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
+    length = min(len(ratio_df), 5)
+    if length == 0:
+        # TODO: count those pics that were not selected to fetch images far from them
+        return None
+
+    images = ratio_df.head(length)['image']
+
+    needed = 20 - length
+    similar = get_similar_images(images, 20)
+    similar = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split('/')[-1], similar)
+    ret_val = []
+    for i in images:
+        ret_val.append(PATH_TO_IMAGES_FRONTEND + i)
+
+    filtered_similar = [x for x in similar if x not in ret_val][:needed]
+    ret_val.extend(filtered_similar)
+    return ret_val
