@@ -60,6 +60,7 @@ def prepare_known_words():
         descriptions_list = row['scores'].items()
         for d, score in descriptions_list:
             for word in d.split(' '):
+                word = word.replace(",", "")
                 known_words[word].append((img_title, score))
 
     print('==================== known_words', len(known_words))
@@ -347,11 +348,14 @@ class SearchView(APIView):
 
                 temp_res = known_words.get(query)
                 if temp_res:
-                    temp_res = sorted(temp_res, key=lambda x: x[1])
+                    print("USE KNOWN WORDS")
+                    temp_res = sorted(temp_res, key=lambda x: x[1], reverse=True)
+                    # print(temp_res)
                     _imgs = []
                     for img, score in temp_res:
                         _imgs.append(img)
 
+                    print("GET SIMILAR IMAGES")
                     similar_images = get_similar_based_on_feedback(query, _imgs[:10],
                                                                    self.df_feedback, 20)
                     return Response(format_response(query, 0, similar_images))
