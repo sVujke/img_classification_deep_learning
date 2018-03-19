@@ -27,5 +27,7 @@ urlpatterns = [
     url(r'^update_images/$', views.SearchView.as_view(), name='update_images'),
     url(r'^remove_images/$', views.SearchView.as_view(), name='remove_images_from_db'),
 
+    url(r'^remove_queries/$', views.SearchView.as_view(), name='remove_prev_queries_from_db'),
+
     # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]

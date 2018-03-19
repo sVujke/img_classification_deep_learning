@@ -345,6 +345,17 @@ class SearchView(APIView):
                 print("SHOW known_words")
                 print(known_words.keys()[:10])
 
+                temp_res = known_words.get(query)
+                if temp_res:
+                    temp_res = sorted(temp_res, key=lambda x: x[1])
+                    _imgs = []
+                    for img, score in temp_res:
+                        _imgs.append(img)
+
+                    similar_images = get_similar_based_on_feedback(query, _imgs[:10],
+                                                                   self.df_feedback, 20)
+                    return Response(format_response(query, 0, similar_images))
+
                 Keyword(keyword=query).save()
                 return Response(send_random(query))
 
@@ -372,11 +383,20 @@ class SearchView(APIView):
             Image.objects.all().delete()
             print("done")
             print("retrieve all images - should be empty")
-            imgs = Image.objects.all()
-            print(len(imgs))
+            print(len(Image.objects.all()))
             print("done")
 
             return Response({"status": "images deleted"})
+
+        elif url_name == 'remove_prev_queries_from_db':
+            print("remove previous queries from DB")
+            Keyword.objects.all().delete()
+            print("done")
+            print("retrieve all keywords - should be empty")
+            print(len(Keyword.objects.all()))
+            print("done")
+
+            return Response({"status": "keywords deleted"})
 
         else:
             pass
