@@ -228,6 +228,9 @@ def ci_lower_bound(positive, total, confidence = 0.95):
     if total == 0 or positive > total:
         return 0
 
+    if positive == 0:
+        return -1.0*total
+
     z = 1.96#Statistics2.pnormaldist(1-(1-confidence)/2)
     phat = 1.0*positive/total
     return (phat + z*z/(2*total) - z * math.sqrt((phat*(1-phat)+z*z/(4*total))/total))/(1+z*z/total)
@@ -243,6 +246,7 @@ def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_thres
         ratio = ci_lower_bound(times_selected, total_times_shown)
         ratio_list.append(ratio)
     ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
+    negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].map(lambda xx: PATH_TO_IMAGES_FRONTEND + xx).tolist() #TODO: CHange when we have show more
     """threshold_ratio_df = ratio_df.loc[ratio_df['ratio'] > 0.5]
     threshold_ratio_df.sort_values(by='ratio', ascending=False, inplace=True)
     length = min(len(threshold_ratio_df), count)
@@ -283,15 +287,35 @@ def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_thres
     images = threshold_ratio_df.head(length)['image']
 
     needed = count - length
-    similar = get_similar_images(images, count)
-    similar = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split(path.sep)[-1], similar)
+    similar = get_similar_filter_negative(images, negative_ratio_list, count)
     ret_val = []
     for i in images:
         ret_val.append(PATH_TO_IMAGES_FRONTEND + i)
 
-    filtered_similar = [x for x in similar if x not in ret_val][:needed]
+    filtered_similar = [item for item in similar if item not in ret_val][:needed]
     ret_val.extend(filtered_similar)
     return ret_val
+
+
+def get_similar_filter_negative(images, filterer, at_least_count):
+    similar = get_similar_images(images, len(filterer) + at_least_count)
+    similar = map(lambda xx: PATH_TO_IMAGES_FRONTEND + xx.split(path.sep)[-1], similar)
+    return [item for item in similar if item not in filterer]
+
+
+def get_similar_based_on_feedback(q, images, _df_feedback, count=20):
+    filtered = _df_feedback.loc[_df_feedback['query'] == q]
+    unique_images = filtered['image'].unique().tolist()
+    ratio_list = []
+    for image in unique_images:
+        total_times_shown = len(filtered.loc[filtered['image'] == image])
+        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
+        ratio = ci_lower_bound(times_selected, total_times_shown)
+        ratio_list.append(ratio)
+    ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
+    negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].map(
+        lambda xx: PATH_TO_IMAGES_FRONTEND + xx).tolist()
+    return get_similar_filter_negative(images, negative_ratio_list, count)
 
 
 class SearchView(APIView):
@@ -375,9 +399,9 @@ class SearchView(APIView):
                 print("No images")
                 return Response(send_random(data.get("query")))
 
-            similar_images = get_similar(data)
-            similar_images = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split('/')[-1], similar_images)
-
+            # similar_images = get_similar(data)
+            # similar_images = map(lambda x: PATH_TO_IMAGES_FRONTEND + x.split('/')[-1], similar_images)
+            similar_images = get_similar_based_on_feedback(data.get("query"), data.get("selectedImages"), self.df_feedback, 20)
             query = data.get("query")
             step = data.get("step")
             return Response(format_response(query, step + 1, similar_images))
