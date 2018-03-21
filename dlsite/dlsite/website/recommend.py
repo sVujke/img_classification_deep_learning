@@ -4,12 +4,11 @@
 
 import pandas as pd
 import numpy as np
-from IPython.display import Image, display
 from pathing_utils import image_name_from_path
 from random import sample
 from .models import Image
 from utils import ci_lower_bound
-from pathing_utils import path_to_images_folder_absolute, path_to_static
+from pathing_utils import path_to_static
 
 
 indices_euclidean_path = path_to_static() + "indices_euclidean.csv"
@@ -25,7 +24,7 @@ def index_from_image_name(image_path):
     return int(image_name_from_path(image_path).split(".jpg")[0])
 
 
-def get_images_similar_to_image(img_name, indices, distances, k, form="df", img_dir=None):
+def get_images_similar_to_image(img_name, indices, distances, k, form="df"):
     """ Returns list or df of k similar images, with or without path
         Parameters:
         1. img_name - "00001.jpg"
@@ -60,7 +59,7 @@ def get_images_similar_to_images(img_lst, k, form="list", rank=True):
     """
     df_lst = []
     for img in img_lst:
-        df_lst.append(get_images_similar_to_image(img, INDICIES, DISTANCES, k, img_dir=path_to_images_folder_absolute()))
+        df_lst.append(get_images_similar_to_image(img, INDICIES, DISTANCES, k))
 
     df = pd.concat(df_lst)
     if rank:
