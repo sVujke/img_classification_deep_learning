@@ -146,7 +146,7 @@ def relevant_images_based_on_feedback(query,
         i += 1
         current_threshold -= threshold_decrement
 
-    length = min(20, length)
+    length = min(count, length)
     if length == 0:
         # TODO: count those pics that were not selected to fetch images far from them
         return None
@@ -154,9 +154,12 @@ def relevant_images_based_on_feedback(query,
     images = threshold_ratio_df.head(length)['image'].tolist()
 
     needed = count - length
-    similar = __get_similar_and_filter_negative(images, negative_ratio_list, count)
-    filtered_similar = [item for item in similar if item not in images][:needed]
-    return images + filtered_similar
+    if needed > 0:
+        similar = __get_similar_and_filter_negative(images, negative_ratio_list, count)
+        filtered_similar = [item for item in similar if item not in images][:needed]
+        images += filtered_similar
+
+    return images
 
 
 def similar_images_filter_negative_feedback(query, images, df_feedback, count=20):
