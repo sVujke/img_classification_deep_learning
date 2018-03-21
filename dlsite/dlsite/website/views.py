@@ -7,30 +7,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from feedback_parser import FeedbackParser
 
-from random import sample
 from collections import defaultdict
 from os import listdir, curdir, path
 from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, ImageCluster
 
-import numpy as np
 import pandas as pd
+from recommend import relevant_images_based_on_feedback, random_images, similar_images_based_on_feedback
 
-from recommend import get_relevant_imgs
-from pathing_utils import path_to_root, \
-    path_to_image_absolute, \
-    path_to_image_frontend, \
+from pathing_utils import path_to_image_frontend, \
     path_to_static, \
     path_to_images_folder_absolute, \
     image_name_from_path
-import math
 
-indices_euclidean_path = path_to_static() + "indices_euclidean.csv"
-INDICIES = np.genfromtxt(indices_euclidean_path, delimiter=',', dtype=str)
-# INDICIES = INDICIES[:1000]
-
-distances_euclidean_path = path_to_static() + "distances_euclidean.csv"
-DISTANCES = np.genfromtxt(distances_euclidean_path, delimiter=',')
-# DISTANCES = DISTANCES[:1000]
 
 inception_layer_path = path_to_static() + "inception_output_layer2"
 print("READ inception_layer_path")
@@ -75,20 +63,6 @@ def load_images_list():
     return images_titles
 
 
-def get_random_images(count=20):
-    """Get image titles from DB
-
-    :return: list of strings
-    """
-    # TODO: take random images from ClusterImage ==============================================
-
-    images = Image.objects.all()
-    subset = sample(images, count)
-    print (subset)
-    print("get random", count, "images. result ->", len(subset))
-    return [i.title for i in subset]
-
-
 def keyword_exists(k):
     """Check if keyword have been searched before
 
@@ -99,103 +73,6 @@ def keyword_exists(k):
     if not q:
         return False
     return True
-
-
-
-def ci_lower_bound(positive, total, confidence = 0.95):
-    """
-
-    :param positive: number of positive votes
-    :param total: total number of votes
-    :param confidence: confidence interval
-    :return:
-    """
-    #http://www.evanmiller.org/how-not-to-sort-by-average-rating.html
-
-    if total == 0 or positive > total:
-        return 0
-
-    if positive == 0:
-        return -1.0*total
-
-    z = 1.96#Statistics2.pnormaldist(1-(1-confidence)/2)
-    phat = 1.0*positive/total
-    return (phat + z*z/(2*total) - z * math.sqrt((phat*(1-phat)+z*z/(4*total))/total))/(1+z*z/total)
-
-
-def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_threshold=0.5, threshold_steps=3, lower_threshold=0.125):
-    filtered = _df_feedback.loc[_df_feedback['query'] == q]
-    unique_images = filtered['image'].unique().tolist()
-    ratio_list = []
-    for image in unique_images:
-        total_times_shown = len(filtered.loc[filtered['image'] == image])
-        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
-        ratio = ci_lower_bound(times_selected, total_times_shown)
-        ratio_list.append(ratio)
-    ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
-    negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].tolist() #TODO: CHange when we have show more
-
-    threshold_decrement = (upper_threshold - lower_threshold)/threshold_steps
-    current_threshold = upper_threshold
-    threshold_ratio_df = pd.DataFrame({}, columns=['image', 'ratio'])
-    length = 0
-    i = 1
-    while current_threshold >= lower_threshold and length < count:
-        ddf = ratio_df.loc[ratio_df['ratio'] >= current_threshold]
-        ddf.sort_values(by='ratio', ascending=False, inplace=True)
-        ddf_len = len(ddf)
-        if ddf_len > 0:
-            threshold_ratio_df = pd.concat([threshold_ratio_df, ddf])
-            length += min(ddf_len, count/i)
-            ratio_df = ratio_df.ix[ratio_df['ratio'] < current_threshold]
-        i += 1
-        current_threshold -= threshold_decrement
-
-    length = min(20, length)
-    if length == 0:
-        # TODO: count those pics that were not selected to fetch images far from them
-        return None
-
-    images = threshold_ratio_df.head(length)['image']
-
-    needed = count - length
-    similar = get_similar_filter_negative(images, negative_ratio_list, count)
-    ret_val = []
-    for i in images:
-        ret_val.append(i)
-
-    filtered_similar = [item for item in similar if item not in ret_val][:needed]
-    ret_val.extend(filtered_similar)
-    return ret_val
-
-
-def get_similar_filter_negative(images, filter_images, at_least_count):
-    """
-    
-    :param images: images list according to which similar images are retrieved
-    :param filter_images: list of images to exclude from return
-    :param at_least_count: min number of images to retrieve
-    :return: 
-    """
-    k = len(filter_images) + at_least_count
-    similar = get_relevant_imgs(images, INDICIES, DISTANCES,
-                                k, form="list", rank=True, img_dir=path_to_images_folder_absolute())
-    similar = map(lambda x: image_name_from_path(x), similar)
-    return [item for item in similar if item not in filter_images]
-
-
-def get_similar_based_on_feedback(q, images, _df_feedback, count=20):
-    filtered = _df_feedback.loc[_df_feedback['query'] == q]
-    unique_images = filtered['image'].unique().tolist()
-    ratio_list = []
-    for image in unique_images:
-        total_times_shown = len(filtered.loc[filtered['image'] == image])
-        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
-        ratio = ci_lower_bound(times_selected, total_times_shown)
-        ratio_list.append(ratio)
-    ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
-    negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].tolist()
-    return get_similar_filter_negative(images, negative_ratio_list, count)
 
 
 class SearchView(APIView):
@@ -227,9 +104,9 @@ class SearchView(APIView):
 
             if keyword_exists(query):
                 print("Keyword exists")
-                images = get_relevant_images_based_on_feedback(query, self.feedback_parser.df_feedback)
+                images = relevant_images_based_on_feedback(query, self.feedback_parser.df_feedback)
                 if images is None:
-                    images = get_random_images(20)
+                    images = random_images(20)
                 return Response(self.format_response(query, 0, images))
 
             else:
@@ -246,12 +123,12 @@ class SearchView(APIView):
                         _imgs.append(img)
 
                     print("GET SIMILAR IMAGES")
-                    similar_images = get_similar_based_on_feedback(query, _imgs[:10],
-                                                                   self.feedback_parser.df_feedback, 20)
+                    similar_images = similar_images_based_on_feedback(query, _imgs[:10],
+                                                                        self.feedback_parser.df_feedback, 20)
                     return Response(self.format_response(query, 0, similar_images))
 
                 Keyword(keyword=query).save()
-                images = get_random_images(20)
+                images = random_images(20)
                 return Response(self.format_response(query, 0, images))
 
         elif url_name == 'update_images':
@@ -313,10 +190,11 @@ class SearchView(APIView):
             self.feedback_parser.save_feedback(query, step, selected_images, not_selected_images)
 
             if not selected_images:
-                random_images = get_random_images(20)
-                return Response(self.format_response(query, step+1, random_images))
+                images = random_images(20)
+            else:
+                images = similar_images_based_on_feedback(query, selected_images, self.feedback_parser.df_feedback, 20)
 
-            similar_images = get_similar_based_on_feedback(query, selected_images, self.feedback_parser.df_feedback, 20)
-            return Response(self.format_response(query, step+1, similar_images))
+            return Response(self.format_response(query, step+1, images))
+
 
         return Response({"error": "post error"})

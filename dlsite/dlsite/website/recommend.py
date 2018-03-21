@@ -3,15 +3,29 @@
 # In[1]:
 
 import pandas as pd
+import numpy as np
 from IPython.display import Image, display
-from os.path import isfile, join, sep
+from pathing_utils import image_name_from_path
+from random import sample
+from .models import Image
+from utils import ci_lower_bound
+from pathing_utils import path_to_images_folder_absolute, path_to_static
 
 
-def index_from_image_name(image_name):
-    return int(image_name.split(sep)[-1].split(".jpg")[0])
+indices_euclidean_path = path_to_static() + "indices_euclidean.csv"
+INDICIES = np.genfromtxt(indices_euclidean_path, delimiter=',', dtype=str)
+# INDICIES = INDICIES[:1000]
+
+distances_euclidean_path = path_to_static() + "distances_euclidean.csv"
+DISTANCES = np.genfromtxt(distances_euclidean_path, delimiter=',')
+# DISTANCES = DISTANCES[:1000]
 
 
-def get_similar_imgs(img_name, indices, distances, k, form="df", img_dir=None):
+def index_from_image_name(image_path):
+    return int(image_name_from_path(image_path).split(".jpg")[0])
+
+
+def get_images_similar_to_image(img_name, indices, distances, k, form="df", img_dir=None):
     """ Returns list or df of k similar images, with or without path
         Parameters:
         1. img_name - "00001.jpg"
@@ -22,20 +36,9 @@ def get_similar_imgs(img_name, indices, distances, k, form="df", img_dir=None):
         6. form - returning df or list
         7. img_dir - path to directory of images
     """
-    print("+" * 30)
-    print(img_name)
     index = index_from_image_name(img_name)#get_key(img_map, img_name)
-    print('index', index)
     distances = distances[index][1:k + 1]
-    print(distances)
-    print('img_dir', img_dir)
-
-    if img_dir is None:
-        images = [x for x in indices[index]]
-    else:
-        images = [str(img_dir) + str(x) for x in indices[index]]
-
-    images = images[1:k + 1]
+    images = [str(x) for x in indices[index]][1:k + 1]
 
     if form == "df":
         return pd.DataFrame({"img": images, "dist": distances})
@@ -43,14 +46,7 @@ def get_similar_imgs(img_name, indices, distances, k, form="df", img_dir=None):
         return images
 
 
-# In[14]:
-
-# get_similar_imgs("000123.jpg", img_map,indices, distances, 10, form="list", img_dir="patka/")
-
-
-# In[15]:
-
-def get_relevant_imgs(img_lst, indices, distances, k, form="list", rank=True, img_dir=None):
+def get_images_similar_to_images(img_lst, k, form="list", rank=True):
     """ Returns list or df of k similar images, with or without path
         Parameters:
         1. img_names - ["00001.jpg","00002.jpg"]
@@ -64,7 +60,7 @@ def get_relevant_imgs(img_lst, indices, distances, k, form="list", rank=True, im
     """
     df_lst = []
     for img in img_lst:
-        df_lst.append(get_similar_imgs(img, indices, distances, k, img_dir=img_dir))
+        df_lst.append(get_images_similar_to_image(img, INDICIES, DISTANCES, k, img_dir=path_to_images_folder_absolute()))
 
     df = pd.concat(df_lst)
     if rank:
@@ -79,21 +75,89 @@ def get_relevant_imgs(img_lst, indices, distances, k, form="list", rank=True, im
         return df.head(k)
 
 
-# In[16]:
+def random_images(count=20):
+    """Get image titles from DB
 
-def display_img(img_dir, img):
-    """ Displays an image
+    :return: list of strings
     """
-    display(Image(img_dir + img))
+    # TODO: take random images from ClusterImage ==============================================
+
+    images = Image.objects.all()
+    subset = sample(images, count)
+    print (subset)
+    print("get random", count, "images. result ->", len(subset))
+    return [i.title for i in subset]
 
 
-# In[17]:
+def relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_threshold=0.5, threshold_steps=3,
+                                          lower_threshold=0.125):
+    filtered = _df_feedback.loc[_df_feedback['query'] == q]
+    unique_images = filtered['image'].unique().tolist()
+    ratio_list = []
+    for image in unique_images:
+        total_times_shown = len(filtered.loc[filtered['image'] == image])
+        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
+        ratio = ci_lower_bound(times_selected, total_times_shown)
+        ratio_list.append(ratio)
+    ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
+    negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].tolist()  # TODO: CHange when we have show more
 
-def display_imgs(img_dir, img_list):
-    """ Displays images from the list
+    threshold_decrement = (upper_threshold - lower_threshold) / threshold_steps
+    current_threshold = upper_threshold
+    threshold_ratio_df = pd.DataFrame({}, columns=['image', 'ratio'])
+    length = 0
+    i = 1
+    while current_threshold >= lower_threshold and length < count:
+        ddf = ratio_df.loc[ratio_df['ratio'] >= current_threshold]
+        ddf.sort_values(by='ratio', ascending=False, inplace=True)
+        ddf_len = len(ddf)
+        if ddf_len > 0:
+            threshold_ratio_df = pd.concat([threshold_ratio_df, ddf])
+            length += min(ddf_len, count / i)
+            ratio_df = ratio_df.ix[ratio_df['ratio'] < current_threshold]
+        i += 1
+        current_threshold -= threshold_decrement
+
+    length = min(20, length)
+    if length == 0:
+        # TODO: count those pics that were not selected to fetch images far from them
+        return None
+
+    images = threshold_ratio_df.head(length)['image']
+
+    needed = count - length
+    similar = get_similar_and_filter_negative(images, negative_ratio_list, count)
+    ret_val = []
+    for i in images:
+        ret_val.append(i)
+
+    filtered_similar = [item for item in similar if item not in ret_val][:needed]
+    ret_val.extend(filtered_similar)
+    return ret_val
+
+
+def get_similar_and_filter_negative(images, filter_images, at_least_count):
     """
-    for img in img_list:
-        display_img(img_dir, img)
+
+    :param images: images list according to which similar images are retrieved
+    :param filter_images: list of images to exclude from return
+    :param at_least_count: min number of images to retrieve
+    :return:
+    """
+    k = len(filter_images) + at_least_count
+    similar = get_images_similar_to_images(images, k, form="list", rank=True)
+    return [item for item in similar if item not in filter_images]
 
 
-
+def similar_images_based_on_feedback(q, images, _df_feedback, count=20):
+    filtered = _df_feedback.loc[_df_feedback['query'] == q]
+    unique_images = filtered['image'].unique().tolist()
+    ratio_list = []
+    for image in unique_images:
+        total_times_shown = len(filtered.loc[filtered['image'] == image])
+        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
+        ratio = ci_lower_bound(times_selected, total_times_shown)
+        ratio_list.append(ratio)
+    ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
+    negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].tolist()
+    return get_similar_and_filter_negative(images, negative_ratio_list, count)
