@@ -88,9 +88,14 @@ def random_images(count=20):
     return [i.title for i in subset]
 
 
-def relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_threshold=0.5, threshold_steps=3,
-                                          lower_threshold=0.125):
-    filtered = _df_feedback.loc[_df_feedback['query'] == q]
+def __unique_image_ratio_df(query, df_feedback):
+    """
+    PRIVATE
+    :return: DataFrame with all the unique images (Column = 'images') that were ever shown for the query
+    and ratio of that image within this query (Column = 'ratio').
+    """
+
+    filtered = df_feedback.loc[df_feedback['query'] == query]
     unique_images = filtered['image'].unique().tolist()
     ratio_list = []
     for image in unique_images:
@@ -98,17 +103,41 @@ def relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_threshold
         times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
         ratio = ci_lower_bound(times_selected, total_times_shown)
         ratio_list.append(ratio)
-    ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
+    return pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
+
+
+def __get_similar_and_filter_negative(images, image_filter, at_least_count):
+    """
+    PRIVATE
+    :param images: images list according to which similar images are retrieved
+    :param image_filter: list of images to exclude from return
+    :param at_least_count: min number of images to retrieve
+    :return: Similar images based on features that are not in image_filter
+    """
+    k = len(image_filter) + at_least_count
+    similar = get_images_similar_to_images(images, k, form="list", rank=True)
+    return [item for item in similar if item not in image_filter]
+
+
+def relevant_images_based_on_feedback(query,
+                                      df_feedback,
+                                      count=20,
+                                      upper_threshold=0.5,
+                                      threshold_steps=3,
+                                      lower_threshold=0.125):
+
+    ratio_df = __unique_image_ratio_df(query, df_feedback)
     negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].tolist()  # TODO: CHange when we have show more
 
     threshold_decrement = (upper_threshold - lower_threshold) / threshold_steps
     current_threshold = upper_threshold
     threshold_ratio_df = pd.DataFrame({}, columns=['image', 'ratio'])
+
     length = 0
     i = 1
     while current_threshold >= lower_threshold and length < count:
         ddf = ratio_df.loc[ratio_df['ratio'] >= current_threshold]
-        ddf.sort_values(by='ratio', ascending=False, inplace=True)
+        ddf = ddf.sort_values(by='ratio', ascending=False)
         ddf_len = len(ddf)
         if ddf_len > 0:
             threshold_ratio_df = pd.concat([threshold_ratio_df, ddf])
@@ -122,41 +151,15 @@ def relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_threshold
         # TODO: count those pics that were not selected to fetch images far from them
         return None
 
-    images = threshold_ratio_df.head(length)['image']
+    images = threshold_ratio_df.head(length)['image'].tolist()
 
     needed = count - length
-    similar = get_similar_and_filter_negative(images, negative_ratio_list, count)
-    ret_val = []
-    for i in images:
-        ret_val.append(i)
-
-    filtered_similar = [item for item in similar if item not in ret_val][:needed]
-    ret_val.extend(filtered_similar)
-    return ret_val
+    similar = __get_similar_and_filter_negative(images, negative_ratio_list, count)
+    filtered_similar = [item for item in similar if item not in images][:needed]
+    return images + filtered_similar
 
 
-def get_similar_and_filter_negative(images, filter_images, at_least_count):
-    """
-
-    :param images: images list according to which similar images are retrieved
-    :param filter_images: list of images to exclude from return
-    :param at_least_count: min number of images to retrieve
-    :return:
-    """
-    k = len(filter_images) + at_least_count
-    similar = get_images_similar_to_images(images, k, form="list", rank=True)
-    return [item for item in similar if item not in filter_images]
-
-
-def similar_images_based_on_feedback(q, images, _df_feedback, count=20):
-    filtered = _df_feedback.loc[_df_feedback['query'] == q]
-    unique_images = filtered['image'].unique().tolist()
-    ratio_list = []
-    for image in unique_images:
-        total_times_shown = len(filtered.loc[filtered['image'] == image])
-        times_selected = len(filtered.loc[(filtered['image'] == image) & (filtered['status'] == 1)])
-        ratio = ci_lower_bound(times_selected, total_times_shown)
-        ratio_list.append(ratio)
-    ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
+def similar_images_filter_negative_feedback(query, images, df_feedback, count=20):
+    ratio_df = __unique_image_ratio_df(query, df_feedback)
     negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].tolist()
-    return get_similar_and_filter_negative(images, negative_ratio_list, count)
+    return __get_similar_and_filter_negative(images, negative_ratio_list, count)

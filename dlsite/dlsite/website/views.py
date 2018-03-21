@@ -12,7 +12,7 @@ from os import listdir, curdir, path
 from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, ImageCluster
 
 import pandas as pd
-from recommend import relevant_images_based_on_feedback, random_images, similar_images_based_on_feedback
+from recommend import relevant_images_based_on_feedback, random_images, similar_images_filter_negative_feedback
 
 from pathing_utils import path_to_image_frontend, \
     path_to_static, \
@@ -123,7 +123,7 @@ class SearchView(APIView):
                         _imgs.append(img)
 
                     print("GET SIMILAR IMAGES")
-                    similar_images = similar_images_based_on_feedback(query, _imgs[:10],
+                    similar_images = similar_images_filter_negative_feedback(query, _imgs[:10],
                                                                         self.feedback_parser.df_feedback, 20)
                     return Response(self.format_response(query, 0, similar_images))
 
@@ -192,7 +192,7 @@ class SearchView(APIView):
             if not selected_images:
                 images = random_images(20)
             else:
-                images = similar_images_based_on_feedback(query, selected_images, self.feedback_parser.df_feedback, 20)
+                images = similar_images_filter_negative_feedback(query, selected_images, self.feedback_parser.df_feedback, 20)
 
             return Response(self.format_response(query, step+1, images))
 
