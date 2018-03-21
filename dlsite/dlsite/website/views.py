@@ -84,6 +84,7 @@ def get_random_images(count=20):
 
     images = Image.objects.all()
     subset = sample(images, count)
+    print (subset)
     print("get random", count, "images. result ->", len(subset))
     return [i.title for i in subset]
 
@@ -99,45 +100,6 @@ def keyword_exists(k):
         return False
     return True
 
-
-
-
-
-def send_based_on_feedback(q, _df_feedback):
-    """Return dict with images based on saved feedback
-
-    :param q: query string
-    :param _df_feedback: feedback df
-    :return: dict
-    """
-
-    images = get_relevant_images_based_on_feedback(q, _df_feedback)
-    if images is None:
-        images = get_random_images()
-    return format_response(q, 0, images)
-
-
-
-
-
-
-def get_similar_images(images, k=20):
-
-    print("run get_similar_images")
-    images_list = get_relevant_imgs(images, INDICIES, DISTANCES,
-                                    k, form="list", rank=True, img_dir=path_to_images_folder_absolute())
-    # images_list = get_relevant_images_rank(selected_img, IMG_MAP, INDICIES, DISTANCES,
-    #                                        k, operation="union", img_dir=PATH_TO_IMAGES)
-    print("return", len(images_list))
-    return images_list
-
-
-def get_similar(d, k=20):
-    print("get selected_img")
-    selected_img = [x.split(FEEDBACK_IMG_SEP)[-1] for x in d.get("selectedImages")]
-    print(selected_img)
-
-    return get_similar_images(selected_img, k)
 
 
 def ci_lower_bound(positive, total, confidence = 0.95):
@@ -171,7 +133,7 @@ def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_thres
         ratio = ci_lower_bound(times_selected, total_times_shown)
         ratio_list.append(ratio)
     ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
-    negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].map(lambda xx: PATH_TO_IMAGES_FRONTEND + xx).tolist() #TODO: CHange when we have show more
+    negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].tolist() #TODO: CHange when we have show more
 
     threshold_decrement = (upper_threshold - lower_threshold)/threshold_steps
     current_threshold = upper_threshold
@@ -200,7 +162,7 @@ def get_relevant_images_based_on_feedback(q, _df_feedback, count=20, upper_thres
     similar = get_similar_filter_negative(images, negative_ratio_list, count)
     ret_val = []
     for i in images:
-        ret_val.append(PATH_TO_IMAGES_FRONTEND + i)
+        ret_val.append(i)
 
     filtered_similar = [item for item in similar if item not in ret_val][:needed]
     ret_val.extend(filtered_similar)
@@ -215,8 +177,10 @@ def get_similar_filter_negative(images, filter_images, at_least_count):
     :param at_least_count: min number of images to retrieve
     :return: 
     """
-    similar = get_similar_images(images, len(filter_images) + at_least_count)
-    similar = map(lambda xx: PATH_TO_IMAGES_FRONTEND + xx.split(path.sep)[-1], similar)
+    k = len(filter_images) + at_least_count
+    similar = get_relevant_imgs(images, INDICIES, DISTANCES,
+                                k, form="list", rank=True, img_dir=path_to_images_folder_absolute())
+    similar = map(lambda x: image_name_from_path(x), similar)
     return [item for item in similar if item not in filter_images]
 
 
@@ -230,8 +194,7 @@ def get_similar_based_on_feedback(q, images, _df_feedback, count=20):
         ratio = ci_lower_bound(times_selected, total_times_shown)
         ratio_list.append(ratio)
     ratio_df = pd.DataFrame({'image': unique_images, 'ratio': ratio_list})
-    negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].map(
-        lambda xx: PATH_TO_IMAGES_FRONTEND + xx).tolist()
+    negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].tolist()
     return get_similar_filter_negative(images, negative_ratio_list, count)
 
 
@@ -244,7 +207,7 @@ class SearchView(APIView):
         return {
             "step": step,
             "query": query,
-            "images": images,
+            "images": [path_to_image_frontend(img) for img in images],
             "ok": True
         }
 
@@ -264,7 +227,10 @@ class SearchView(APIView):
 
             if keyword_exists(query):
                 print("Keyword exists")
-                return Response(send_based_on_feedback(query, self.df_feedback))
+                images = get_relevant_images_based_on_feedback(query, self.feedback_parser.df_feedback)
+                if images is None:
+                    images = get_random_images(20)
+                return Response(self.format_response(query, 0, images))
 
             else:
                 print("Send random")
@@ -275,18 +241,18 @@ class SearchView(APIView):
                 if temp_res:
                     print("USE KNOWN WORDS")
                     temp_res = sorted(temp_res, key=lambda x: x[1], reverse=True)
-                    # print(temp_res)
                     _imgs = []
                     for img, score in temp_res:
                         _imgs.append(img)
 
                     print("GET SIMILAR IMAGES")
                     similar_images = get_similar_based_on_feedback(query, _imgs[:10],
-                                                                   self.df_feedback, 20)
-                    return Response(format_response(query, 0, similar_images))
+                                                                   self.feedback_parser.df_feedback, 20)
+                    return Response(self.format_response(query, 0, similar_images))
 
                 Keyword(keyword=query).save()
-                return Response(send_random(query))
+                images = get_random_images(20)
+                return Response(self.format_response(query, 0, images))
 
         elif url_name == 'update_images':
             print("get all images available for frontend")

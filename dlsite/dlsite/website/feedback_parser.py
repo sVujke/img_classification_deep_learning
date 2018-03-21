@@ -6,9 +6,9 @@ from pathing_utils import path_to_static
 class FeedbackParser():
 
     def __init__(self):
-        self.df_feedback = self.read_feedback()
         self.FEEDBACK_FILE_PATH = path_to_static() + "feedback.csv"
         self.FEEDBACK_COLS = ["query", "step", "image", "status"]
+        self.df_feedback = self.read_feedback()
 
     def save_feedback(self, query, step, selected_images, non_selected_images):
         res = []

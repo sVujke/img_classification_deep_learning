@@ -6,7 +6,7 @@ def path_to_root():
 
 
 def path_to_static():
-    return path_to_root() + settings.STATIC_URL
+    return path_to_root() + 'dlsite' + '/' + 'dlsite' + '/' + 'website' + settings.STATIC_URL
 
 
 def path_to_images_folder_absolute():
@@ -18,7 +18,7 @@ def path_to_image_absolute(image_name):
 
 
 def path_to_images_folder_frontend():
-    return 'mlimages' + "/"
+    return 'mlimages' + '/'
 
 
 def path_to_image_frontend(image_name):

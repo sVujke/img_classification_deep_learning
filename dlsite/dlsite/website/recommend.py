@@ -3,24 +3,12 @@
 # In[1]:
 
 import pandas as pd
-import numpy as np
 from IPython.display import Image, display
-from os import listdir
 from os.path import isfile, join, sep
 
 
 def index_from_image_name(image_name):
     return int(image_name.split(sep)[-1].split(".jpg")[0])
-
-
-def load_img_names(path):
-    """ Returns list of img names on specified path
-    """
-    images = [f for f in listdir(path) if isfile(join(path, f))]
-    df = pd.DataFrame(images)
-    df.columns = ["img"]
-    df = df.sort_values("img")
-    return df["img"].values
 
 
 def get_similar_imgs(img_name, indices, distances, k, form="df", img_dir=None):
