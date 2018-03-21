@@ -28,12 +28,10 @@ def get_images_similar_to_image(img_name, indices, distances, k, form="df"):
     """ Returns list or df of k similar images, with or without path
         Parameters:
         1. img_name - "00001.jpg"
-        2. img_map = {'0': '000000.jpg'}
-        3. indices - nested np array with top 50 closest images for each image
-        4. distances - nested np array with top 50 distances for each image
-        5. k - 10 (number of images to be returned)
-        6. form - returning df or list
-        7. img_dir - path to directory of images
+        2. indices - nested np array with top 50 closest images for each image
+        3. distances - nested np array with top 50 distances for each image
+        4. k (number of images to be returned)
+        5. form - returning df or list
     """
     index = index_from_image_name(img_name)#get_key(img_map, img_name)
     distances = distances[index][1:k + 1]
@@ -48,14 +46,10 @@ def get_images_similar_to_image(img_name, indices, distances, k, form="df"):
 def get_images_similar_to_images(img_lst, k, form="list", rank=True):
     """ Returns list or df of k similar images, with or without path
         Parameters:
-        1. img_names - ["00001.jpg","00002.jpg"]
-        2. img_map = {'0': '000000.jpg'}
-        3. indices - nested np array with top 50 closest images for each image
-        4. distances - nested np array with top 50 distances for each image
-        5. k - 10 (number of images to be returned)
-        6. form - returning df or list
-        7. img_dir - path to directory of images
-        8. rank - return ranked by distance or not
+        1. img_lst - ["00001.jpg","00002.jpg"]
+        2. k (number of images to be returned)
+        3. form - returning df or list
+        4. rank - return ranked by distance or not
     """
     df_lst = []
     for img in img_lst:
