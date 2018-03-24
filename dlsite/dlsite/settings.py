@@ -135,9 +135,12 @@ USE_TZ = True
 STATICFILES_DIRS = (
     # This lets Django's collectstatic store our bundles
     os.path.join(BASE_DIR, 'assets'),
+    # os.path.join(BASE_DIR, 'staticfiles')
 )
 
-STATIC_URL =  os.path.sep + 'static' + os.path.sep
+print(BASE_DIR)
+print(os.path.sep + 'static' + os.path.sep)
+STATIC_URL =  os.path.sep + "static/" 
 
 # WEBPACK_LOADER = {
 #     'DEFAULT': {

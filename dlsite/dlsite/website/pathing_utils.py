@@ -6,19 +6,19 @@ def path_to_root():
 
 
 def path_to_static():
-    return path_to_root() + 'dlsite' + '/' + 'dlsite' + '/' + 'website' + settings.STATIC_URL
+    return path_to_root() + 'dlsite' +  path.sep + 'dlsite' +  path.sep + 'website' + settings.STATIC_URL
 
 
 def path_to_images_folder_absolute():
-    return path_to_root() + 'frontend' + '/' + 'public' + '/' + path_to_images_folder_frontend()
+    return path_to_root() + 'frontend' +  path.sep + 'public' +  path.sep + path_to_images_folder_frontend()
 
 
 def path_to_image_absolute(image_name):
-    return path_to_root() + 'frontend' + '/' + 'public' + '/' + path_to_image_frontend(image_name)
+    return path_to_root() + 'frontend' +  path.sep + 'public' +  path.sep + path_to_image_frontend(image_name)
 
 
 def path_to_images_folder_frontend():
-    return 'mlimages' + '/'
+    return 'mlimages' +  path.sep
 
 
 def path_to_image_frontend(image_name):
@@ -26,5 +26,6 @@ def path_to_image_frontend(image_name):
 
 
 def image_name_from_path(path_to_image):
-    return path_to_image.split("/")[-1]
+    # print("THIS IS IT:",path_to_image)
+    return path_to_image.split(path.sep)[-1]
 
