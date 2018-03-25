@@ -103,6 +103,8 @@ class SearchView(APIView):
             query = query.lower().strip()
             print("Search for", query)
 
+            print("STEP:", self.feedback_parser.get_step(query))
+
             if keyword_exists(query):
                 print("Keyword exists")
                 images = relevant_images_based_on_feedback(query, self.feedback_parser.df_feedback)

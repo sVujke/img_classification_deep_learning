@@ -33,7 +33,8 @@ class FeedbackParser():
         df.to_csv(self.FEEDBACK_FILE_PATH, index=False)
         return df
 
-
-
-
-
+    def get_step(self, query):
+        df = self.read_feedback()
+        # print(df.head())
+        df = df[df["query"] == query]
+        return df["step"].max()
