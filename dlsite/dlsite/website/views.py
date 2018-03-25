@@ -48,6 +48,8 @@ def prepare_known_words():
     print("del df_in")
     del df_in
     print("done")
+
+
 prepare_known_words()
 
 
@@ -59,7 +61,8 @@ def index(request):
 
 
 def load_images_list():
-    images_titles = [f for f in listdir(path_to_images_folder_absolute()) if f.endswith(".jpg")]
+    images_titles = [f for f in listdir(
+        path_to_images_folder_absolute()) if f.endswith(".jpg")]
     images_titles = sorted(images_titles, reverse=False)
     return images_titles
 
@@ -107,12 +110,17 @@ class SearchView(APIView):
 
             print("STEP:", self.feedback_parser.get_step(query))
 
+            print("NUMBER OF SEARCHES: ",
+                  self.search_history.get_number_of_searches(query))
             self.search_history.search_history_update(query)
             print("UPDATED search history for query: ", query)
+            print("NUMBER OF SEARCHES: ",
+                  self.search_history.get_number_of_searches(query))
 
             if keyword_exists(query):
                 print("Keyword exists")
-                images = relevant_images_based_on_feedback(query, self.feedback_parser.df_feedback)
+                images = relevant_images_based_on_feedback(
+                    query, self.feedback_parser.df_feedback)
                 if images is None:
                     images = random_images(20)
                 return Response(self.format_response(query, 0, images))
@@ -125,14 +133,15 @@ class SearchView(APIView):
                 Keyword(keyword=query).save()
                 if temp_res:
                     print("USE KNOWN WORDS")
-                    temp_res = sorted(temp_res, key=lambda x: x[1], reverse=True)
+                    temp_res = sorted(
+                        temp_res, key=lambda x: x[1], reverse=True)
                     _imgs = []
                     for img, score in temp_res:
                         _imgs.append(img)
 
                     print("GET SIMILAR IMAGES")
                     similar_images = similar_images_filter_negative_feedback(query, _imgs[:10],
-                                                                        self.feedback_parser.df_feedback, 20)
+                                                                             self.feedback_parser.df_feedback, 20)
                     return Response(self.format_response(query, 0, similar_images))
 
                 images = random_images(20)
@@ -191,17 +200,20 @@ class SearchView(APIView):
         if url_name == 'feedback':
             query = data.get("query")
             step = data.get("step")
-            selected_images = [image_name_from_path(img) for img in data.get("selectedImages")]
-            not_selected_images = [image_name_from_path(img) for img in data.get("nonSelectedImages")]
+            selected_images = [image_name_from_path(
+                img) for img in data.get("selectedImages")]
+            not_selected_images = [image_name_from_path(
+                img) for img in data.get("nonSelectedImages")]
 
-            self.feedback_parser.save_feedback(query, step, selected_images, not_selected_images)
+            self.feedback_parser.save_feedback(
+                query, step, selected_images, not_selected_images)
 
             if not selected_images:
                 images = random_images(20)
             else:
-                images = similar_images_filter_negative_feedback(query, selected_images, self.feedback_parser.df_feedback, 20)
+                images = similar_images_filter_negative_feedback(
+                    query, selected_images, self.feedback_parser.df_feedback, 20)
 
             return Response(self.format_response(query, step+1, images))
-
 
         return Response({"error": "post error"})

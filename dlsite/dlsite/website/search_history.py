@@ -28,3 +28,10 @@ class SearchHistory():
             df.loc[df['query'] == query, "times"] = num + 1
 
         df.to_csv(self.HISTORY_FILE_PATH, index=False)
+
+    def get_number_of_searches(self, query):
+        df = self.read_history()
+        if query not in df["query"].values:
+            return 0
+        else:
+            return df[df["query"] == query]["times"].values[0]
