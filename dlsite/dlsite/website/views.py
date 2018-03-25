@@ -6,6 +6,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from feedback_parser import FeedbackParser
+from search_history import SearchHistory
 
 from collections import defaultdict
 from os import listdir, curdir, path
@@ -79,6 +80,7 @@ class SearchView(APIView):
 
     def __init__(self):
         self.feedback_parser = FeedbackParser()
+        self.search_history = SearchHistory()
 
     def format_response(self, query, step, images):
         return {
@@ -104,6 +106,9 @@ class SearchView(APIView):
             print("Search for", query)
 
             print("STEP:", self.feedback_parser.get_step(query))
+
+            self.search_history.search_history_update(query)
+            print("UPDATED search history for query: ", query)
 
             if keyword_exists(query):
                 print("Keyword exists")
