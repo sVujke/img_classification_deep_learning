@@ -52,7 +52,7 @@ class SelectedImage extends Component {
             </div>
         );
     }
-};
+}
 
 SelectedImage.propTypes = {
     index: PropTypes.number,
