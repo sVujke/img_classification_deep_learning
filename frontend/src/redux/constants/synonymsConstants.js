@@ -1,0 +1,1 @@
+export const SYNONYMS_UPDATE = 'SYNONYMS_UPDATE';
