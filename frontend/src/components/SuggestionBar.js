@@ -33,7 +33,8 @@ const suggestionBarDefaultStyles = {
         padding: 6,
         backgroundColor: '#009587',
         color: '#CFEAE7',
-        marginRight: 5, 
+        marginRight: 5,
+        marginBottom: 5,
         textTransform: "none",
         fontWeight: 'normal',
         boxShadow: '1px 2px 4px rgba(0,0,0,0.5)'

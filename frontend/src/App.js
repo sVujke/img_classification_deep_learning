@@ -132,7 +132,7 @@ const appStyles = {
     marginTop: 12
   },
   imageGrid: { 
-    marginTop: 12
+    marginTop: 7
   },
   submitButton: {
     marginLeft: 'auto',
