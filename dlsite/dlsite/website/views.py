@@ -111,11 +111,11 @@ class SearchView(APIView):
                 return Response(self.format_response(query, 0, images))
 
             else:
-                print("Send random")
                 print("SHOW known_words")
                 print(known_words.keys()[:10])
 
                 temp_res = known_words.get(query)
+                Keyword(keyword=query).save()
                 if temp_res:
                     print("USE KNOWN WORDS")
                     temp_res = sorted(temp_res, key=lambda x: x[1], reverse=True)
@@ -128,7 +128,6 @@ class SearchView(APIView):
                                                                         self.feedback_parser.df_feedback, 20)
                     return Response(self.format_response(query, 0, similar_images))
 
-                Keyword(keyword=query).save()
                 images = random_images(20)
                 return Response(self.format_response(query, 0, images))
 
