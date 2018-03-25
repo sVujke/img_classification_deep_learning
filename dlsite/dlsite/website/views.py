@@ -85,7 +85,8 @@ class SearchView(APIView):
             "step": step,
             "query": query,
             "images": [path_to_image_frontend(img) for img in images],
-            "ok": True
+            "ok": True,
+            "synonyms": []
         }
 
     def get(self, request):

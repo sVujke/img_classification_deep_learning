@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import SearchBar from './components/SearchBar';
+import SuggestionBar from './components/SuggestionBar';
 import { Button, Typography, CircularProgress } from 'material-ui'
 import { connect } from 'react-redux'
 import * as imagesActions from './redux/actions/imagesActions';
 import * as searchActions from './redux/actions/searchActions';
 import * as screenWidthActions from './redux/actions/screenWidthActions';
+
 
 import Gallery from 'react-photo-gallery';
 import SelectedImage from './components/SelectedImage';
@@ -22,10 +24,14 @@ class App extends Component {
     if (this.props.loading) return;
     let searchValue = this.props.currentSearchText.trim();
     if (searchValue) {
-      this.props.searchTextChanged(searchValue);
-      this.props.searchPressed();
-      this.props.getImages(this.props.currentSearchText);
+      this.makeNewSearch(searchValue)
     }
+  }
+
+  makeNewSearch = (value) => {
+    this.props.searchTextChanged(value);
+    this.props.searchPressed();
+    this.props.getImages(value);
   }
 
   onSearchTextChange = (value) => {
@@ -34,6 +40,10 @@ class App extends Component {
 
   onSelectImage = (event, obj) => {
     this.props.selectImage(obj.photo);
+  }
+
+  onSynonymClick = (synonym) => {
+    this.makeNewSearch(synonym)
   }
 
   render() {
@@ -49,6 +59,8 @@ class App extends Component {
         if (this.props.images) {
           const desiredImageSize = 360
           return (
+          <div>
+            {this.props.synonyms != null && this.props.synonyms.length > 0 ? <SuggestionBar style={appStyles.suggestionBar} synonyms={this.props.synonyms} onClick={(synonym) => this.onSynonymClick(synonym)}/> : null}
             <div style={appStyles.imageGrid}>
               <ResizeAware 
                 onResize={({width}) => this.props.screenWidthChanged(width)}>
@@ -67,6 +79,7 @@ class App extends Component {
                   Submit
               </Button>
             </div>
+          </div>
           );
         } else {
           if (this.props.error){
@@ -115,8 +128,11 @@ const appStyles = {
     padding: 0,
     margin: 12
   },
+  suggestionBar: {
+    marginTop: 12
+  },
   imageGrid: { 
-    marginTop: 20
+    marginTop: 12
   },
   submitButton: {
     marginLeft: 'auto',
@@ -162,7 +178,8 @@ function mapStateToProps(state) {
     loading: state.imagesReducer.loading,
     error: state.imagesReducer.error,
     currentSearchText: state.searchReducer.currentSearchText,
-    screenWidth: state.screenWidthReducer.screenWidth
+    screenWidth: state.screenWidthReducer.screenWidth,
+    synonyms: state.synonymsReducer.synonyms
   }
 }
 

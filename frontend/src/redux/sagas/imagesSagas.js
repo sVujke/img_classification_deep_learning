@@ -6,6 +6,11 @@ import {
     getImagesFailure,
     postFeedbackFailure
 } from '../actions/imagesActions';
+
+import {
+    synonymsUpdated
+} from '../actions/synonymsActions';
+
 import {
     GET_IMAGES_REQUEST, POST_FEEDBACK_REQUEST
 } from '../constants/imagesConstants';
@@ -33,6 +38,7 @@ export function* requestImages(action) {
     //needed so the photo gallery will disappear for 1 millisec
     //so that all the loaded images could reload again to trigger the update
     yield call(delay, 1);
+    yield put(synonymsUpdated(null));
     try {
         const result = yield call(
             api.getImages,
@@ -40,6 +46,7 @@ export function* requestImages(action) {
         );
         if (result.status === 200) {
             yield put(getImagesSuccess(wrapImages(result.data.images), result.data.step));
+            yield put(synonymsUpdated(result.data.synonyms))
         }
         else {
             yield put(getImagesFailure(result.error));
