@@ -6,7 +6,8 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from feedback_parser import FeedbackParser
-
+import gensim 
+import spacy
 from collections import defaultdict
 from os import listdir, curdir, path
 from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, ImageCluster
@@ -21,33 +22,38 @@ from pathing_utils import path_to_image_frontend, \
 
 
 inception_layer_path = path_to_static() + "inception_output_layer2"
-print("READ inception_layer_path")
+word_vec_path = path_to_static() + "GoogleNews-vectors-negative300.bin.gz"
+vocab_path = path_to_static() + "vocab.csv"
+word2vec_vocab_path = path_to_static() + "word2vecvocab.csv"
+# print("READ inception_layer_path")
 df_in = pd.read_pickle(inception_layer_path)
-df_in.columns = ['img', 'output_layer', 'scores']
-print("DROP column - output_layer")
+df_in.columns = ['img', 'output_layer', 'scores', "processed_scores"]
+# print("DROP column - output_layer")
 df_in.drop('output_layer', axis=1, inplace=True)
-print(df_in.head())
-known_words = defaultdict(list)
+# print(df_in.head())
+# known_words = defaultdict(list)
+word2vec = gensim.models.KeyedVectors.load_word2vec_format(word_vec_path, binary=True, limit=50000)
+known_words = list(pd.read_csv(vocab_path).vocab)
+word2vec_vocab = list(pd.read_csv(word2vec_vocab_path)["word2vec"])
 
-
-def prepare_known_words():
-    global df_in, known_words
-    print("create dict of known words")
-    rows = df_in.shape[0]
-    for i in range(rows):
-        row = df_in.iloc[i]
-        img_title = row['img']
-        descriptions_list = row['scores'].items()
-        for d, score in descriptions_list:
-            for word in d.split(' '):
-                word = word.replace(",", "")
-                known_words[word].append((img_title, score))
-
-    print('==================== known_words', len(known_words))
-    print("del df_in")
-    del df_in
-    print("done")
-prepare_known_words()
+# nlp = spacy.load('en')
+# def prepare_known_words():
+#     global df_in, known_words
+#     print("create dict of known words")
+#     rows = df_in.shape[0]
+#     for i in range(rows):
+#         row = df_in.iloc[i]
+#         img_title = row['img']
+#         descriptions_list = row['scores'].items()
+#         for d, score in descriptions_list:
+#             for word in d.split(' '):
+#                 word = word.replace(",", "")
+#                 known_words[word].append((img_title, score))
+#     print('==================== known_words', len(known_words))
+#     print("del df_in")
+#     del df_in
+#     print("done")
+# prepare_known_words()
 
 
 def index(request):
@@ -102,13 +108,22 @@ class SearchView(APIView):
             query = query.lower().strip()
             print("Search for", query)
 
-            if keyword_exists(query):
+            if query in known_words:
                 print("Keyword exists")
                 images = relevant_images_based_on_feedback(query, self.feedback_parser.df_feedback)
+
+            elif query  in word2vec.vocab:
+                print("inside word2vec")
+                if query in word2vec_vocab:
+                    word2vec_vocab.remove(query)
+                nquery = str(word2vec.most_similar_to_given(query, word2vec_vocab))
+                print(nquery)
+                word2vec_vocab.append(query)
+                images = relevant_images_based_on_feedback(nquery, self.feedback_parser.df_feedback)
                 if images is None:
+                    print("random images")
                     images = random_images(20)
                 return Response(self.format_response(query, 0, images))
-
             else:
                 print("Send random")
                 print("SHOW known_words")
@@ -125,6 +140,7 @@ class SearchView(APIView):
                     print("GET SIMILAR IMAGES")
                     similar_images = similar_images_filter_negative_feedback(query, _imgs[:10],
                                                                         self.feedback_parser.df_feedback, 20)
+                    print(similar_images);
                     return Response(self.format_response(query, 0, similar_images))
 
                 Keyword(keyword=query).save()

@@ -64,6 +64,5 @@ urllib3==1.22
 wcwidth==0.1.7
 webencodings==0.5.1
 widgetsnbextension==2.0.0
-xgboost==0.6a2
 yellowbrick==0.5
 
