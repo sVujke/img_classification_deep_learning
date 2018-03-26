@@ -91,7 +91,7 @@ class SearchView(APIView):
             "query": query,
             "images": [path_to_image_frontend(img) for img in images],
             "ok": True,
-            "synonyms": []
+            "synonyms": ["antonia", "cute", "blonde", "girl", "my", "orphography", "sucks"]
         }
 
     def get(self, request):
@@ -215,5 +215,7 @@ class SearchView(APIView):
                     query, selected_images, self.feedback_parser.df_feedback, 20)
 
             return Response(self.format_response(query, step+1, images))
+        elif url_name == 'upload_example_image':
+            print(request.data)
 
         return Response({"error": "post error"})

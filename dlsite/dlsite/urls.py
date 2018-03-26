@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^$', views.index),
     url(r'^search/$', views.SearchView.as_view(), name='search'),
     url(r'^feedback/$', views.SearchView.as_view(), name='feedback'),
+    url(r'^upload_example_image/$', views.SearchView.as_view(), name='upload_example_image'),
 
     # internal methods
     url(r'^update_images/$', views.SearchView.as_view(), name='update_images'),

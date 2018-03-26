@@ -1,4 +1,4 @@
-import { call, put, takeEvery, select, wait } from 'redux-saga/effects';
+import { call, put, takeEvery, select } from 'redux-saga/effects';
 import { delay } from 'redux-saga';
 import * as api from '../../api/imagesApi';
 import {

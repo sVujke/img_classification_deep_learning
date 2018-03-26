@@ -6,10 +6,11 @@ import { connect } from 'react-redux'
 import * as imagesActions from './redux/actions/imagesActions';
 import * as searchActions from './redux/actions/searchActions';
 import * as screenWidthActions from './redux/actions/screenWidthActions';
-
+import * as imageUploadActions from './redux/actions/imageUploadActions';
 
 import Gallery from 'react-photo-gallery';
 import SelectedImage from './components/SelectedImage';
+import DropZoneComponent from './components/DropZoneComponent';
 import ResizeAware from 'react-resize-aware';
 import { compose } from './utils/compose'
 
@@ -44,6 +45,28 @@ class App extends Component {
 
   onSynonymClick = (synonym) => {
     this.makeNewSearch(synonym)
+  }
+
+  onImageDrop = (acceptedFiles, rejectedFiles) => {
+    if (this.props.uploading) { return }
+    console.log(acceptedFiles)
+    console.log(rejectedFiles)
+
+    if (acceptedFiles != null && acceptedFiles.length > 0) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64imageString = reader.result;
+        this.props.setDropzoneDisplayImage(base64imageString)
+      };
+      reader.onabort = () => console.log('file reading was aborted');
+      reader.onerror = () => console.log('file reading has failed');
+
+      reader.readAsDataURL(acceptedFiles[0]);
+    }
+  }
+
+  onUploadClicked = (event) => {
+    this.props.uploadImage()
   }
 
   render() {
@@ -118,7 +141,14 @@ class App extends Component {
           onClick={event => this.onSearchClick(event)} 
           onChange={value => this.onSearchTextChange(value)}
         />
-        {middleComponent()}
+        <div>
+          <Typography style={appStyles.successText}>Oops! This word is unfamiliar :(</Typography>
+          <Typography style={appStyles.successText}>Please, provide an example image of what you are looking for.</Typography>
+          <DropZoneComponent disabled={this.props.uploading} style={appStyles.dropZoneContainer} base64image={this.props.dropzoneDisplayBase64image} onDrop={this.onImageDrop.bind(this)} />
+          {this.props.uploading ? <CircularProgress thickness={3} size={40} style={appStyles.uploadProgress}/>
+          : <Button raised style={appStyles.submitButton} onClick={event => this.onUploadClicked(event)}>Upload</Button>}
+          {/*middleComponent()*/}
+        </div>
       </div>
     );
   }
@@ -133,6 +163,25 @@ const appStyles = {
   },
   imageGrid: { 
     marginTop: 7
+  },
+  dropZoneContainer: {
+    marginTop: 12,
+    backgroundColor: '#f7f7f7',
+    padding: 12,
+    width: '55%',
+    minWidth: 180,
+    maxWidth: 640,
+    marginLeft: 'auto',
+    marginRight: 'auto'
+  },
+  selectImageButton: {
+    backgroundColor: 'rgb(66,133,244)',
+    color: 'white',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    display: 'block',
+    marginBottom: 12,
+    marginTop: 12
   },
   submitButton: {
     marginLeft: 'auto',
@@ -166,7 +215,15 @@ const appStyles = {
     right: 0
   },
   progress: {
+    color: 'rgb(66,133,244)'
+  },
+  uploadProgress: {
     color: 'rgb(66,133,244)',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    display: 'block', 
+    marginTop: 40,
+    marginBottom: 40
   }
 }
 
@@ -179,7 +236,9 @@ function mapStateToProps(state) {
     error: state.imagesReducer.error,
     currentSearchText: state.searchReducer.currentSearchText,
     screenWidth: state.screenWidthReducer.screenWidth,
-    synonyms: state.synonymsReducer.synonyms
+    synonyms: state.synonymsReducer.synonyms,
+    dropzoneDisplayBase64image: state.imageUploadReducer.base64image,
+    uploading: state.imageUploadReducer.uploading
   }
 }
 
@@ -198,6 +257,10 @@ function mapDispatchToProps(dispatch) {
   const {
     screenWidthChanged
   } = screenWidthActions
+  const {
+    setDisplayImage,
+    uploadImage
+  } = imageUploadActions;
   return {
     getImages: compose(dispatch, getImages),
     getImagesSuccess: compose(dispatch, getImagesSuccess),
@@ -206,7 +269,9 @@ function mapDispatchToProps(dispatch) {
     postFeedback: compose(dispatch, postFeedback),
     searchTextChanged: compose(dispatch, searchTextChanged),
     searchPressed: compose(dispatch, searchPressed),
-    screenWidthChanged: compose(dispatch, screenWidthChanged)
+    screenWidthChanged: compose(dispatch, screenWidthChanged),
+    setDropzoneDisplayImage: compose(dispatch, setDisplayImage),
+    uploadImage: compose(dispatch, uploadImage)
   }
 }
 

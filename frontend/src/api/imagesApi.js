@@ -21,3 +21,12 @@ export function postFeedback (data) {
         }
     });
 }
+
+export function uploadBase64image (data) {
+    const url = ApiURLs.host + ApiMethods.uploadExampleImage;
+    return axios.post(url, JSON.stringify(data), {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+}

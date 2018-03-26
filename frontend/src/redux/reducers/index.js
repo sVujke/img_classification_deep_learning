@@ -3,11 +3,13 @@ import imagesReducer from './imagesReducer'
 import searchReducer from './searchReducer'
 import screenWidthReducer from './screenWidthReducer'
 import synonymsReducer from './synonymsReducer'
+import imageUploadReducer from './imageUploadReducer'
 
 
 export default combineReducers({
     imagesReducer,
     searchReducer,
     screenWidthReducer,
-    synonymsReducer
+    synonymsReducer,
+    imageUploadReducer
 })
