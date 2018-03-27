@@ -60,7 +60,7 @@ import download
 from cache import cache
 import os
 import sys
-
+from pathing_utils import path_to_static
 ########################################################################
 # Various directories and file-names.
 
@@ -69,7 +69,7 @@ import sys
 data_url = "http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz"
 
 # Directory to store the downloaded data.
-data_dir = "inception/"
+data_dir = path_to_static() + "inception" + os.path.sep
 
 # File containing the mappings between class-number and uid. (Downloaded)
 path_uid_to_cls = "imagenet_2012_challenge_label_map_proto.pbtxt"
@@ -121,7 +121,7 @@ class NameLookup:
 
         # Read the uid-to-name mappings from file.
         path = os.path.join(data_dir, path_uid_to_name)
-        with open(file=path, mode='r') as file:
+        with open(name=path, mode='r') as file:
             # Read all lines from the file.
             lines = file.readlines()
 
@@ -143,7 +143,7 @@ class NameLookup:
 
         # Read the uid-to-cls mappings from file.
         path = os.path.join(data_dir, path_uid_to_cls)
-        with open(file=path, mode='r') as file:
+        with open(name=path, mode='r') as file:
             # Read all lines from the file.
             lines = file.readlines()
 
