@@ -17,7 +17,7 @@ from recommend import relevant_images_based_on_feedback, random_images, similar_
 from reverse_img_query import load_data_np, \
     build_Index, \
     get_tl_vector
-from inception import Inception
+from inception import Inception, maybe_download
 import gc
 
 from pathing_utils import path_to_image_frontend, \
@@ -240,7 +240,7 @@ class SearchView(APIView):
 
             if inception_object is None:
                 inception_object = Inception()
-                inception_object.maybe_download()
+                maybe_download()
                 print("INCEPTION OBJECT INITIALIZED")
             if annoy_index is None:
                 data, img_lst = load_data_np(inception_layer_path)
