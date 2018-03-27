@@ -16,7 +16,7 @@ import pandas as pd
 from recommend import relevant_images_based_on_feedback, random_images, similar_images_filter_negative_feedback
 from reverse_img_query import load_data_np, \
     build_Index, \
-    get_tl_vector,
+    get_tl_vector
 from inception import Inception
 import gc
 
