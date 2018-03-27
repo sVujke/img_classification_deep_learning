@@ -80,8 +80,8 @@ def maybe_download_and_extract(url, download_dir):
         # file_path, _ = urllib.request.urlretrieve(url=url,
         #                                           filename=file_path,
         #                                           reporthook=_print_download_progress)
-            r = requests.get(url, allow_redirects=True)
-            open(file_path, 'wb').write(r.content)
+        r = requests.get(url, allow_redirects=True)
+        open(file_path, 'wb').write(r.content)
         print()
         print("Download finished. Extracting files.")
 
