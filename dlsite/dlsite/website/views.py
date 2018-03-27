@@ -251,10 +251,12 @@ class SearchView(APIView):
                 data = []
             n = gc.collect()
 
-            vector = get_ol_vector(inception_object, img) #this is for igor test
-            # vector = get_tl_vector(inception_object, img)
+            # this is for igor test
+            # vector = get_ol_vector(inception_object, img)
+            # this is transfer layer
+            vector = get_tl_vector(inception_object, img)
 
-            similar_img_indexes = annoy_index.get_nns_by_vector(vector, n=20)
+            similar_img_indexes = annoy_index.get_nns_by_vector(vector, n=50)
             print("SIM indexes:", similar_img_indexes)
             similar_imgs = [load_images_list()[i] for i in similar_img_indexes]
             print("SIM images:", similar_imgs)
