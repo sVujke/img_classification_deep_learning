@@ -245,11 +245,10 @@ class SearchView(APIView):
             if annoy_index is None:
                 data, img_lst = load_data_np(inception_layer_path)
                 annoy_index = build_Index(
-                    data, vector_size=2048, metric="euclidean", trees=20)
+                    data, vector_size=len(data[0]), metric="euclidean", trees=20)
                 print("ANNOY INDEX MADE")
                 data = []
-                img_lst = []
-                n = gc.collect()
+            n = gc.collect()
 
             vector = get_tl_vector(inception_object, img)
 
