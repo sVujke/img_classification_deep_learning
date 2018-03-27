@@ -28,6 +28,7 @@ from pathing_utils import path_to_image_frontend, \
 
 from utils import image_from_base64str
 
+maybe_download()
 inception_layer_path = path_to_static() + "inception_output_layer2"
 print("READ inception_layer_path")
 df_in = pd.read_pickle(inception_layer_path)
@@ -240,7 +241,6 @@ class SearchView(APIView):
 
             if inception_object is None:
                 inception_object = Inception()
-                maybe_download()
                 print("INCEPTION OBJECT INITIALIZED")
             if annoy_index is None:
                 data, img_lst = load_data_np(inception_layer_path)
