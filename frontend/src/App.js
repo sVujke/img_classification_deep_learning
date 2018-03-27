@@ -108,8 +108,10 @@ class App extends Component {
           if (this.props.uploadPrompt === true) {
             return(
               <div style={appStyles.uploadPromptContaner}>
-                <Typography style={appStyles.successText}>Oops! This word is unfamiliar :(</Typography>
-                <Typography style={appStyles.successText}>Please, provide an example image of what you are looking for.</Typography>
+                {this.props.uploadError == null 
+                ? <div><Typography style={appStyles.successText}>Oops! This word is unfamiliar :(</Typography>
+                  <Typography style={appStyles.successText}>Please, provide an example image of what you are looking for.</Typography></div>
+                  : <Typography style={appStyles.errorText}>{this.props.uploadError.message}</Typography>}
                 <DropZoneComponent disabled={this.props.uploading} style={appStyles.dropZoneContainer} base64image={this.props.dropzoneDisplayBase64image} onDrop={this.onImageDrop.bind(this)} />
                 {this.props.uploading ? <CircularProgress thickness={3} size={40} style={appStyles.uploadProgress} />
                   : <Button disabled={this.props.dropzoneDisplayBase64image == null} raised style={this.props.dropzoneDisplayBase64image == null ? appStyles.submitButtonDisabled : appStyles.submitButton} onClick={event => this.onUploadClicked(event)}>Upload</Button>}
@@ -117,11 +119,10 @@ class App extends Component {
             )
           }
           if (this.props.error){
-            const { error } = this.props;
             return (
               <div style={appStyles.progressContainer}>
                 <Typography style={appStyles.errorText}>
-                  {error.message}
+                  {this.props.error.message}
                 </Typography>
                 
             </div>
@@ -262,7 +263,8 @@ function mapStateToProps(state) {
     synonyms: state.synonymsReducer.synonyms,
     dropzoneDisplayBase64image: state.imageUploadReducer.base64image,
     uploadPrompt: state.imageUploadReducer.prompted,
-    uploading: state.imageUploadReducer.uploading
+    uploading: state.imageUploadReducer.uploading,
+    uploadError: state.imageUploadReducer.error
   }
 }
 

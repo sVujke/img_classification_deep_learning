@@ -18,7 +18,8 @@ from recommend import relevant_images_based_on_feedback, random_images, similar_
 from pathing_utils import path_to_image_frontend, \
     path_to_static, \
     path_to_images_folder_absolute, \
-    image_name_from_path
+    image_name_from_path,\
+    path_to_uploads
 
 from utils import image_from_base64str
 
@@ -225,8 +226,8 @@ class SearchView(APIView):
             return Response(self.format_response(query, step+1, images))
         elif url_name == 'upload_example_image':
             b64str = data.get('base64image')
-            query = data.get("query")
-            img = image_from_base64str(b64str, path_to_static())
+            query = data.get("query").lower().strip()
+            img = image_from_base64str(b64str, path_to_uploads(query))
             return Response(self.format_response(query, 0, random_images(20)))
 
         return Response({"error": "post error"})

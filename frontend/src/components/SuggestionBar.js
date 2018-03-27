@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import Button from 'material-ui/Button';
-import Cancel from 'material-ui-icons/Cancel';
 
 export default class SuggestionBar extends Component {
 
@@ -21,10 +20,7 @@ export default class SuggestionBar extends Component {
 
 SuggestionBar.propTypes = {
     style: PropTypes.object,
-    synonyms: PropTypes.shape ({
-        text: PropTypes.string,
-        selected: PropTypes.bool
-    }),
+    synonyms: PropTypes.array,
     onElementClick: PropTypes.func
 }
 

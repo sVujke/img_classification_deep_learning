@@ -10,25 +10,26 @@ import {
 const initialState = {
     base64image: null,
     uploading: false,
-    prompted: false
+    prompted: false,
+    error: null
 }
 
 export default function (state = initialState, action) {
     switch (action.type) {
         case SET_DISPLAY_IMAGE: {
-            return { ...state, base64image: action.payload.base64image};
+            return { ...state, base64image: action.payload.base64image, error: null};
         }
         case PROMPT_IMAGE_UPLOAD: {
-            return { ...state, prompted: action.payload.prompt }
+            return { ...state, prompted: action.payload.prompt, error: null }
         }
         case UPLOAD_IMAGE_REQUEST: {
-            return {...state, uploading: true}
+            return {...state, uploading: true, error: null}
         }
         case UPLOAD_IMAGE_SUCCESS: {
             return {...initialState}
         }
         case UPLOAD_IMAGE_FAILURE: {
-            return {...initialState}
+            return {...state, uploading: false, error: action.payload.error}
         }
         default:
             return state;
