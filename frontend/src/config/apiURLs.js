@@ -6,5 +6,6 @@ export const ApiURLs = {
 
 export const ApiMethods = {
     search: 'search/',
-    feedback: 'feedback/'
+    feedback: 'feedback/',
+    uploadExampleImage: 'upload_example_image/'
 }
