@@ -16,7 +16,8 @@ import pandas as pd
 from recommend import relevant_images_based_on_feedback, random_images, similar_images_filter_negative_feedback
 from reverse_img_query import load_data_np, \
     build_Index, \
-    get_tl_vector
+    get_tl_vector, \
+    get_ol_vector
 from inception import Inception, maybe_download
 import gc
 
@@ -250,7 +251,8 @@ class SearchView(APIView):
                 data = []
             n = gc.collect()
 
-            vector = get_tl_vector(inception_object, img)
+            vector = get_ol_vector(inception_object, img) #this is for igor test
+            # vector = get_tl_vector(inception_object, img)
 
             similar_img_indexes = annoy_index.get_nns_by_vector(vector, n=20)
             print("SIM indexes:", similar_img_indexes)
