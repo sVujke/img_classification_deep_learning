@@ -240,6 +240,7 @@ class SearchView(APIView):
 
             if inception_object is None:
                 inception_object = Inception()
+                inception_object.maybe_download()
                 print("INCEPTION OBJECT INITIALIZED")
             if annoy_index is None:
                 data, img_lst = load_data_np(inception_layer_path)
