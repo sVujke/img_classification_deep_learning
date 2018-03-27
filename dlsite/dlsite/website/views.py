@@ -14,6 +14,11 @@ from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, I
 
 import pandas as pd
 from recommend import relevant_images_based_on_feedback, random_images, similar_images_filter_negative_feedback
+from reverse_img_query import load_data_np, \
+    build_Index, \
+    get_tl_vector,
+from inception import Inception
+import gc
 
 from pathing_utils import path_to_image_frontend, \
     path_to_static, \
@@ -31,6 +36,8 @@ print("DROP column - output_layer")
 df_in.drop('output_layer', axis=1, inplace=True)
 print(df_in.head())
 known_words = defaultdict(list)
+annoy_index = None
+inception_object = None
 
 
 def prepare_known_words():
@@ -224,10 +231,32 @@ class SearchView(APIView):
                     query, selected_images, self.feedback_parser.df_feedback, 20)
 
             return Response(self.format_response(query, step+1, images))
+
         elif url_name == 'upload_example_image':
+            global annoy_index, inception_object
             b64str = data.get('base64image')
             query = data.get("query").lower().strip()
             img = image_from_base64str(b64str, path_to_uploads(query))
-            return Response(self.format_response(query, 0, random_images(20)))
+
+            if inception_object is None:
+                inception_object = Inception()
+                print("INCEPTION OBJECT INITIALIZED")
+            if annoy_index is None:
+                data, img_lst = load_data_np(inception_layer_path)
+                annoy_index = build_Index(
+                    data, vector_size=2048, metric="euclidean", trees=20)
+                print("ANNOY INDEX MADE")
+                data = []
+                img_lst = []
+                n = gc.collect()
+
+            vector = get_tl_vector(inception_object, img)
+
+            similar_img_indexes = annoy_index.get_nns_by_vector(vector, n=20)
+            print("SIM indexes:", similar_img_indexes)
+            similar_imgs = [load_images_list()[i] for i in similar_img_indexes]
+            print("SIM images:", similar_imgs)
+
+            return Response(self.format_response(query, 0, similar_imgs))
 
         return Response({"error": "post error"})
