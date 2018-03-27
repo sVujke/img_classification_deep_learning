@@ -1,5 +1,16 @@
 from os import path, makedirs
+import errno
 from django.conf import settings
+
+
+def __mkdir_p(p):
+    try:
+        makedirs(p)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and path.isdir(p):
+            pass
+        else:
+            raise
 
 
 def path_to_root():
@@ -13,7 +24,7 @@ def path_to_static():
 def path_to_uploads(query):
     p = path_to_root() + 'dlsite' + path.sep + 'dlsite' + path.sep + 'website' + settings.STATIC_URL + 'uploads' + \
            path.sep + query + path.sep
-    makedirs(p)
+    __mkdir_p(p)
     return p
 
 
