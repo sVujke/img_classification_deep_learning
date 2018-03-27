@@ -9,12 +9,22 @@ import {
     UPLOAD_IMAGE_REQUEST
 } from '../constants/imageUploadConstants';
 
-import { imageUploadSelector } from '../reducers/selectors';
+import {
+    getImagesSuccess
+} from '../actions/imagesActions';
+
+import {
+    synonymsUpdated
+} from '../actions/synonymsActions';
+
+import { imageUploadSelector, activeSearchSelector } from '../reducers/selectors';
+import { wrapImages } from '../../utils/imageWrapper';
 
 
 export function* uploadImage(action) {
     const data = {
         base64image: yield select(imageUploadSelector),
+        query: yield select(activeSearchSelector)
     }
     try {   
         const result = yield call(
@@ -22,7 +32,14 @@ export function* uploadImage(action) {
             data
         );
         if (result.status === 200) {
+            const {
+                images,
+                step,
+                synonyms
+            } = result.data
             yield put(uploadImageSuccess());
+            yield put(getImagesSuccess(wrapImages(images), step));
+            yield put(synonymsUpdated(synonyms))
         }
         else {
             yield put(uploadImageFailure(result.error));

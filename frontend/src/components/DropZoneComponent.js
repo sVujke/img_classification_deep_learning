@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Dropzone from 'react-dropzone'
 import { Typography, Grid } from 'material-ui'
+import { placeholderBase64 } from '../assets/placeholderBase64'
 
 
 export default class DropZoneComponent extends Component {
@@ -31,7 +32,7 @@ export default class DropZoneComponent extends Component {
                             <Typography style={dropZoneTextSmall}>Supported: .jpeg, .png &le; 4 MB</Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}>
-                            <img src={this.props.base64image} style={dropZoneImage}/>
+                            <img alt='img' src={this.props.base64image != null ? this.props.base64image : placeholderBase64} style={dropZoneImage}/>
                         </Grid>
                     </Grid>
                 </Dropzone>

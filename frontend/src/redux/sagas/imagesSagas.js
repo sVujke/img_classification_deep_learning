@@ -12,6 +12,10 @@ import {
 } from '../actions/synonymsActions';
 
 import {
+    promptImageUpload
+} from '../actions/imageUploadActions';
+
+import {
     GET_IMAGES_REQUEST, POST_FEEDBACK_REQUEST
 } from '../constants/imagesConstants';
 
@@ -39,14 +43,26 @@ export function* requestImages(action) {
     //so that all the loaded images could reload again to trigger the update
     yield call(delay, 1);
     yield put(synonymsUpdated(null));
+    yield put(promptImageUpload(false))
     try {
         const result = yield call(
             api.getImages,
             action.payload.query
         );
         if (result.status === 200) {
-            yield put(getImagesSuccess(wrapImages(result.data.images), result.data.step));
-            yield put(synonymsUpdated(result.data.synonyms))
+            const {
+                images,
+                step,
+                synonyms,
+                uploadRequired
+            } = result.data
+            if (uploadRequired != null) {
+                yield put(getImagesFailure(null))
+                yield put(promptImageUpload(true))
+            } else {
+                yield put(getImagesSuccess(wrapImages(images), step));
+                yield put(synonymsUpdated(synonyms))
+            }
         }
         else {
             yield put(getImagesFailure(result.error));

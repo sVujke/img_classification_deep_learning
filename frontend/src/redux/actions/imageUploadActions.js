@@ -2,7 +2,8 @@ import {
     SET_DISPLAY_IMAGE,
     UPLOAD_IMAGE_REQUEST,
     UPLOAD_IMAGE_SUCCESS,
-    UPLOAD_IMAGE_FAILURE
+    UPLOAD_IMAGE_FAILURE,
+    PROMPT_IMAGE_UPLOAD
 } from '../constants/imageUploadConstants';
 
 
@@ -11,6 +12,15 @@ export function setDisplayImage(base64image) {
         type: SET_DISPLAY_IMAGE,
         payload: {
             base64image
+        }
+    }
+}
+
+export function promptImageUpload(prompt) {
+    return {
+        type: PROMPT_IMAGE_UPLOAD,
+        payload: {
+            prompt
         }
     }
 }

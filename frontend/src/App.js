@@ -105,6 +105,17 @@ class App extends Component {
           </div>
           );
         } else {
+          if (this.props.uploadPrompt === true) {
+            return(
+              <div style={appStyles.uploadPromptContaner}>
+                <Typography style={appStyles.successText}>Oops! This word is unfamiliar :(</Typography>
+                <Typography style={appStyles.successText}>Please, provide an example image of what you are looking for.</Typography>
+                <DropZoneComponent disabled={this.props.uploading} style={appStyles.dropZoneContainer} base64image={this.props.dropzoneDisplayBase64image} onDrop={this.onImageDrop.bind(this)} />
+                {this.props.uploading ? <CircularProgress thickness={3} size={40} style={appStyles.uploadProgress} />
+                  : <Button disabled={this.props.dropzoneDisplayBase64image == null} raised style={this.props.dropzoneDisplayBase64image == null ? appStyles.submitButtonDisabled : appStyles.submitButton} onClick={event => this.onUploadClicked(event)}>Upload</Button>}
+              </div>
+            )
+          }
           if (this.props.error){
             const { error } = this.props;
             return (
@@ -116,7 +127,6 @@ class App extends Component {
             </div>
             );
           }
-          else {
           return (
             <div style={appStyles.progressContainer}>
               <Typography style={appStyles.successText}>
@@ -131,7 +141,6 @@ class App extends Component {
             </div>
           );
         }
-        }
       }
     }
     return (
@@ -141,14 +150,7 @@ class App extends Component {
           onClick={event => this.onSearchClick(event)} 
           onChange={value => this.onSearchTextChange(value)}
         />
-        <div>
-          <Typography style={appStyles.successText}>Oops! This word is unfamiliar :(</Typography>
-          <Typography style={appStyles.successText}>Please, provide an example image of what you are looking for.</Typography>
-          <DropZoneComponent disabled={this.props.uploading} style={appStyles.dropZoneContainer} base64image={this.props.dropzoneDisplayBase64image} onDrop={this.onImageDrop.bind(this)} />
-          {this.props.uploading ? <CircularProgress thickness={3} size={40} style={appStyles.uploadProgress}/>
-          : <Button raised style={appStyles.submitButton} onClick={event => this.onUploadClicked(event)}>Upload</Button>}
-          {/*middleComponent()*/}
-        </div>
+        {middleComponent()}
       </div>
     );
   }
@@ -164,8 +166,20 @@ const appStyles = {
   imageGrid: { 
     marginTop: 7
   },
+  uploadPromptContaner: {
+    top: '20%',
+    margin: 'auto',
+    display: 'flex',
+    justifyContent: 'center',
+    position: 'absolute',
+    alignItems: 'center',
+    flexDirection: 'column',
+    width: '100%',
+    left: 0,
+    right: 0
+  },
   dropZoneContainer: {
-    marginTop: 12,
+    marginTop: 40,
     backgroundColor: '#f7f7f7',
     padding: 12,
     width: '55%',
@@ -191,6 +205,15 @@ const appStyles = {
     display: 'block', 
     backgroundColor: 'rgb(66,133,244)',
     color: 'white'
+  },
+  submitButtonDisabled: {
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    marginTop: 40,
+    marginBottom: 40,
+    display: 'block',
+    backgroundColor: '#d1d1d1',
+    color: '#9b9b9b'
   },
   successText: {
     fontSize: 25,
@@ -238,6 +261,7 @@ function mapStateToProps(state) {
     screenWidth: state.screenWidthReducer.screenWidth,
     synonyms: state.synonymsReducer.synonyms,
     dropzoneDisplayBase64image: state.imageUploadReducer.base64image,
+    uploadPrompt: state.imageUploadReducer.prompted,
     uploading: state.imageUploadReducer.uploading
   }
 }

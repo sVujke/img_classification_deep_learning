@@ -20,6 +20,7 @@ from pathing_utils import path_to_image_frontend, \
     path_to_images_folder_absolute, \
     image_name_from_path
 
+from utils import image_from_base64str
 
 inception_layer_path = path_to_static() + "inception_output_layer2"
 print("READ inception_layer_path")
@@ -91,7 +92,13 @@ class SearchView(APIView):
             "query": query,
             "images": [path_to_image_frontend(img) for img in images],
             "ok": True,
-            "synonyms": ["antonia", "cute", "blonde", "girl", "my", "orphography", "sucks"]
+            "synonyms": ["test", "synonym", "hello", "test2", "test3", "test4", "end test"]
+        }
+
+    def prompt_image_upload(self):
+        return {
+            "ok": True,
+            "uploadRequired": True
         }
 
     def get(self, request):
@@ -143,9 +150,10 @@ class SearchView(APIView):
                     similar_images = similar_images_filter_negative_feedback(query, _imgs[:10],
                                                                              self.feedback_parser.df_feedback, 20)
                     return Response(self.format_response(query, 0, similar_images))
+                else:
 
-                images = random_images(20)
-                return Response(self.format_response(query, 0, images))
+                    #images = random_images(20)
+                    return Response(self.prompt_image_upload())
 
         elif url_name == 'update_images':
             print("get all images available for frontend")
@@ -216,6 +224,9 @@ class SearchView(APIView):
 
             return Response(self.format_response(query, step+1, images))
         elif url_name == 'upload_example_image':
-            print(request.data)
+            b64str = data.get('base64image')
+            query = data.get("query")
+            img = image_from_base64str(b64str, path_to_static())
+            return Response(self.format_response(query, 0, random_images(20)))
 
         return Response({"error": "post error"})
