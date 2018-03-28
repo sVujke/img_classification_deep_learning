@@ -20,7 +20,8 @@ export default function (state = initialState, action) {
             return { ...state, base64image: action.payload.base64image, error: null};
         }
         case PROMPT_IMAGE_UPLOAD: {
-            return { ...state, prompted: action.payload.prompt, error: null }
+            const prompted = action.payload.prompt
+            return { ...state, base64image: null, prompted, error: null }
         }
         case UPLOAD_IMAGE_REQUEST: {
             return {...state, uploading: true, error: null}

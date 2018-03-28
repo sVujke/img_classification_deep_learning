@@ -22,7 +22,7 @@ class App extends Component {
   }
 
   onSearchClick = (event) => {
-    if (this.props.loading) return;
+    if (this.props.loading || this.props.uploading) return;
     let searchValue = this.props.currentSearchText.trim();
     if (searchValue) {
       this.makeNewSearch(searchValue)
