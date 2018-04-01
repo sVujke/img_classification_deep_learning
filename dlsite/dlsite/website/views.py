@@ -147,7 +147,6 @@ class SearchView(APIView):
                 print(known_words.keys()[:10])
 
                 temp_res = known_words.get(query)
-                Keyword(keyword=query).save()
                 if temp_res:
                     print("USE KNOWN WORDS")
                     temp_res = sorted(
@@ -161,8 +160,6 @@ class SearchView(APIView):
                                                                              self.feedback_parser.df_feedback, 20)
                     return Response(self.format_response(query, 0, similar_images))
                 else:
-
-                    #images = random_images(20)
                     return Response(self.prompt_image_upload())
 
         elif url_name == 'update_images':
@@ -217,6 +214,7 @@ class SearchView(APIView):
 
         if url_name == 'feedback':
             query = data.get("query")
+            Keyword(keyword=query).save()
             step = data.get("step")
             selected_images = [image_name_from_path(
                 img) for img in data.get("selectedImages")]
