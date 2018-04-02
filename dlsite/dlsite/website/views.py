@@ -31,15 +31,21 @@ from utils import image_from_base64str
 
 maybe_download()
 inception_layer_path = path_to_static() + "inception_output_layer2"
+inverted_index_path = path_to_static() + "inverted_index"
+vocab_path = path_to_static() + "vocab.csv"
+word2vec_vocab_path = path_to_static() + "word2vecvocab.csv"
 print("READ inception_layer_path")
+inverted_index = pd.read_pickle(inverted_index_path)
 df_in = pd.read_pickle(inception_layer_path)
 df_in.columns = ['img', 'output_layer', 'scores']
-print("DROP column - output_layer")
+# print("DROP column - output_layer")
 df_in.drop('output_layer', axis=1, inplace=True)
-print(df_in.head())
+# print(df_in.head())
 known_words = defaultdict(list)
 annoy_index = None
 inception_object = None
+vocabs = list(pd.read_csv(vocab_path).vocab)
+word2vec_vocab = list(pd.read_csv(word2vec_vocab_path)["word2vec"])
 
 
 def prepare_known_words():
@@ -51,9 +57,7 @@ def prepare_known_words():
         img_title = row['img']
         descriptions_list = row['scores'].items()
         for d, score in descriptions_list:
-            for word in d.split(' '):
-                word = word.replace(",", "")
-                known_words[word].append((img_title, score))
+            known_words[str(d)].append((img_title, score))
 
     print('==================== known_words', len(known_words))
     print("del df_in")
@@ -61,8 +65,8 @@ def prepare_known_words():
     print("done")
 
 
-prepare_known_words()
-
+# prepare_known_words()
+# print(known_words)
 
 def index(request):
     # images_list = Image.objects.all()
@@ -124,7 +128,10 @@ class SearchView(APIView):
 
             query = query.lower().strip()
             print("Search for", query)
-
+            if( query in vocabs):
+                images =  list(inverted_index.loc[query].image.values())[:20]
+                print("results are ", images)
+                return Response(self.format_response(query, 0, images))
             print("STEP:", self.feedback_parser.get_step(query))
 
             print("NUMBER OF SEARCHES: ",
