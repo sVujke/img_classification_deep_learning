@@ -83,7 +83,7 @@ def load_images_list():
     return images_titles
 
 
-def keyword_exists(k):
+def keyword_has_been_learned(k):
     """Check if keyword have been searched before
 
     :param k: string, search keyword
@@ -101,16 +101,26 @@ class SearchView(APIView):
         self.feedback_parser = FeedbackParser()
         self.search_history = SearchHistory()
 
-    def format_response(self, query, step, images):
+    @staticmethod
+    def format_response(query, step, images, synonyms=list()):
+        """
+
+        :param query: str
+        :param step: int
+        :param images: list
+        :param synonyms: list
+        :return:
+        """
         return {
             "step": step,
             "query": query,
             "images": [path_to_image_frontend(img) for img in images],
             "ok": True,
-            "synonyms": ["test", "synonym", "hello", "test2", "test3", "test4", "end test"]
+            "synonyms": synonyms
         }
 
-    def prompt_image_upload(self):
+    @staticmethod
+    def prompt_image_upload():
         return {
             "ok": True,
             "uploadRequired": True
@@ -129,17 +139,6 @@ class SearchView(APIView):
 
             query = query.lower().strip()
             print("Search for", query)
-            if( query in vocabs):
-                images =  list(inverted_index.loc[query].image.values())[:20]
-                print("results of imagenet are ", images)
-                return Response(self.format_response(query, 0, images))
-            if query in word2vec_vocab:
-                word2vec_vocab.remove(query)
-                nquery = str(word2vec.most_similar_to_given(query, word2vec_vocab))
-                print("word 2 vec", nquery)
-                word2vec_vocab.append(query)
-                return Response(self.format_response(nquery, 0, images))
-                    
             print("STEP:", self.feedback_parser.get_step(query))
 
             print("NUMBER OF SEARCHES: ",
@@ -149,7 +148,7 @@ class SearchView(APIView):
             print("NUMBER OF SEARCHES: ",
                   self.search_history.get_number_of_searches(query))
 
-            if keyword_exists(query):
+            if keyword_has_been_learned(query):
                 print("Keyword exists")
                 images = relevant_images_based_on_feedback(
                     query, self.feedback_parser.df_feedback)
@@ -158,26 +157,33 @@ class SearchView(APIView):
                 return Response(self.format_response(query, 0, images))
 
             else:
-                print("SHOW known_words")
-                print(known_words.keys()[:10])
-
-                temp_res = known_words.get(query)
-                Keyword(keyword=query).save()
-                if temp_res:
-                    print("USE KNOWN WORDS")
-                    temp_res = sorted(
-                        temp_res, key=lambda x: x[1], reverse=True)
-                    _imgs = []
-                    for img, score in temp_res:
-                        _imgs.append(img)
-
-                    print("GET SIMILAR IMAGES")
-                    similar_images = similar_images_filter_negative_feedback(query, _imgs[:10],
-                                                                             self.feedback_parser.df_feedback, 20)
-                    return Response(self.format_response(query, 0, similar_images))
+                # print("SHOW known_words")
+                # print(known_words.keys()[:10])
+                #
+                # temp_res = known_words.get(query)
+                # if temp_res:
+                #     print("USE KNOWN WORDS")
+                #     temp_res = sorted(
+                #         temp_res, key=lambda x: x[1], reverse=True)
+                #     _imgs = []
+                #     for img, score in temp_res:
+                #         _imgs.append(img)
+                #
+                #     print("GET SIMILAR IMAGES")
+                #     similar_images = similar_images_filter_negative_feedback(query, _imgs[:10],
+                #                                                              self.feedback_parser.df_feedback, 20)
+                #     return Response(self.format_response(query, 0, similar_images))
+                if query in vocabs:
+                    images = list(inverted_index.loc[query].image.values())[:20]
+                    print("results are ", images)
+                    return Response(self.format_response(query, 0, images))
+                if query in word2vec_vocab:
+                    word2vec_vocab.remove(query)
+                    nquery = str(word2vec.most_similar_to_given(query, word2vec_vocab))
+                    print("word 2 vec", nquery)
+                    word2vec_vocab.append(query)
+                    return Response(self.format_response(nquery, 0, images))
                 else:
-
-                    #images = random_images(20)
                     return Response(self.prompt_image_upload())
 
         elif url_name == 'update_images':
@@ -232,6 +238,7 @@ class SearchView(APIView):
 
         if url_name == 'feedback':
             query = data.get("query")
+            Keyword(keyword=query).save()
             step = data.get("step")
             selected_images = [image_name_from_path(
                 img) for img in data.get("selectedImages")]
@@ -242,7 +249,9 @@ class SearchView(APIView):
                 query, step, selected_images, not_selected_images)
 
             if not selected_images:
-                images = random_images(20)
+                images = relevant_images_based_on_feedback(query, self.feedback_parser.df_feedback)
+                if images is None:
+                    images = random_images(20)
             else:
                 images = similar_images_filter_negative_feedback(
                     query, selected_images, self.feedback_parser.df_feedback, 20)
@@ -266,10 +275,12 @@ class SearchView(APIView):
                 data = []
             n = gc.collect()
 
-            vector = get_ol_vector(inception_object, img) #this is for igor test
+            # this is for igor test
+            vector = get_ol_vector(inception_object, img)
+            # this is transfer layer
             # vector = get_tl_vector(inception_object, img)
 
-            similar_img_indexes = annoy_index.get_nns_by_vector(vector, n=20)
+            similar_img_indexes = annoy_index.get_nns_by_vector(vector, n=50)
             print("SIM indexes:", similar_img_indexes)
             similar_imgs = [load_images_list()[i] for i in similar_img_indexes]
             print("SIM images:", similar_imgs)
