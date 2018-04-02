@@ -11,7 +11,7 @@ from search_history import SearchHistory
 from collections import defaultdict
 from os import listdir, curdir, path
 from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, ImageCluster
-
+import gensim
 import pandas as pd
 from recommend import relevant_images_based_on_feedback, random_images, similar_images_filter_negative_feedback
 from reverse_img_query import load_data_np, \
@@ -34,6 +34,7 @@ inception_layer_path = path_to_static() + "inception_output_layer2"
 inverted_index_path = path_to_static() + "inverted_index"
 vocab_path = path_to_static() + "vocab.csv"
 word2vec_vocab_path = path_to_static() + "word2vecvocab.csv"
+word_vec_path = path_to_static() + "GoogleNews-vectors-negative300.bin.gz"
 print("READ inception_layer_path")
 inverted_index = pd.read_pickle(inverted_index_path)
 df_in = pd.read_pickle(inception_layer_path)
@@ -46,7 +47,7 @@ annoy_index = None
 inception_object = None
 vocabs = list(pd.read_csv(vocab_path).vocab)
 word2vec_vocab = list(pd.read_csv(word2vec_vocab_path)["word2vec"])
-
+word2vec = gensim.models.KeyedVectors.load_word2vec_format(word_vec_path, binary=True)
 
 def prepare_known_words():
     global df_in, known_words
@@ -130,8 +131,15 @@ class SearchView(APIView):
             print("Search for", query)
             if( query in vocabs):
                 images =  list(inverted_index.loc[query].image.values())[:20]
-                print("results are ", images)
+                print("results of imagenet are ", images)
                 return Response(self.format_response(query, 0, images))
+            if query in word2vec_vocab:
+                word2vec_vocab.remove(query)
+                nquery = str(word2vec.most_similar_to_given(query, word2vec_vocab))
+                print("word 2 vec", nquery)
+                word2vec_vocab.append(query)
+                return Response(self.format_response(nquery, 0, images))
+                    
             print("STEP:", self.feedback_parser.get_step(query))
 
             print("NUMBER OF SEARCHES: ",
