@@ -96,20 +96,16 @@ class SearchView(APIView):
         self.feedback_parser = FeedbackParser()
         self.search_history = SearchHistory()
 
-    def format_response(self, query, step, images):
+    def format_response(self, query, step, images, synonyms=list(), prompt_upload=False):
         return {
             "step": step,
             "query": query,
             "images": [path_to_image_frontend(img) for img in images],
             "ok": True,
-            "synonyms": ["test", "synonym", "hello", "test2", "test3", "test4", "end test"]
+            "synonyms": ["test", "synonym", "hello", "test2", "test3", "test4", "end test"],
+            "uploadRequired": prompt_upload
         }
 
-    def prompt_image_upload(self):
-        return {
-            "ok": True,
-            "uploadRequired": True
-        }
 
     def get(self, request):
 
@@ -160,7 +156,8 @@ class SearchView(APIView):
                                                                              self.feedback_parser.df_feedback, 20)
                     return Response(self.format_response(query, 0, similar_images))
                 else:
-                    return Response(self.prompt_image_upload())
+                    images = random_images(20)
+                    return Response(self.format_response(query, 0, images, prompt_upload=True))
 
         elif url_name == 'update_images':
             print("get all images available for frontend")
@@ -256,7 +253,7 @@ class SearchView(APIView):
             # this is transfer layer
             vector = get_tl_vector(inception_object, img)
 
-            similar_img_indexes = annoy_index.get_nns_by_vector(vector, n=50)
+            similar_img_indexes = annoy_index.get_nns_by_vector(vector, n=52)
             print("SIM indexes:", similar_img_indexes)
             similar_imgs = [load_images_list()[i] for i in similar_img_indexes]
             print("SIM images:", similar_imgs)
