@@ -48,7 +48,7 @@ class App extends Component {
   }
 
   onImageDrop = (acceptedFiles, rejectedFiles) => {
-    if (this.props.uploading) { return }
+    if (this.props.uploading || this.props.loading) { return }
     console.log(acceptedFiles)
     console.log(rejectedFiles)
 
@@ -90,7 +90,7 @@ class App extends Component {
                   ? <div><Typography style={appStyles.successText}>Oops! This word is unfamiliar :(</Typography>
                     <Typography style={appStyles.successText}>Please, provide an example image of what you are looking for.</Typography></div>
                   : <Typography style={appStyles.errorText}>{this.props.uploadError.message}</Typography>}
-                <DropZoneComponent disabled={this.props.uploading} style={appStyles.dropZoneContainer} base64image={this.props.dropzoneDisplayBase64image} onDrop={this.onImageDrop.bind(this)} />
+                <DropZoneComponent disabled={this.props.uploading || this.props.loading} style={appStyles.dropZoneContainer} base64image={this.props.dropzoneDisplayBase64image} onDrop={this.onImageDrop.bind(this)} />
                 {this.props.uploading ? <CircularProgress thickness={3} size={40} style={appStyles.uploadProgress} />
                   : <Button disabled={this.props.dropzoneDisplayBase64image == null} raised style={this.props.dropzoneDisplayBase64image == null ? appStyles.submitButtonDisabled : appStyles.submitButton} onClick={event => this.onUploadClicked(event)}>Upload</Button>}
                 <Typography style={appStyles.successText}>Or browse through random images</Typography>

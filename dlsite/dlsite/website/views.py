@@ -102,7 +102,7 @@ class SearchView(APIView):
         self.search_history = SearchHistory()
 
     @staticmethod
-    def format_response(self, query, step, images, synonyms=list(), prompt_upload=False):
+    def format_response( query, step, images, synonyms=list(), prompt_upload=False):
         return {
             "step": step,
             "query": query,
@@ -174,11 +174,8 @@ class SearchView(APIView):
                             images = sorted(inverted_index.loc[word].image.items(), key=lambda x: x[0], reverse = True)[:100]
                             images = [val[1] for val in images]
                             return Response(self.format_response(word, 0, images, nwords))
-                    images = random_images(20)
-                    return Response(self.format_response(query, 0, images, nwords))
-                else:
-                    images = random_images(20)
-                    return Response(self.format_response(query, 0, images, prompt_upload=True))
+                images = random_images(20)
+                return Response(self.format_response(query, 0, images, prompt_upload=True))
 
         elif url_name == 'update_images':
             print("get all images available for frontend")
