@@ -225,7 +225,9 @@ class SearchView(APIView):
                 query, step, selected_images, not_selected_images)
 
             if not selected_images:
-                images = random_images(20)
+                images = relevant_images_based_on_feedback(query, self.feedback_parser.df_feedback)
+                if images is None:
+                    images = random_images(20)
             else:
                 images = similar_images_filter_negative_feedback(
                     query, selected_images, self.feedback_parser.df_feedback, 20)
