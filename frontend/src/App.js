@@ -17,7 +17,7 @@ import { compose } from './utils/compose'
 class App extends Component {
 
   onSubmitClicked = (event) => {
-    if(this.props.loading) return;
+    if (this.props.loading || this.props.uploading) return;
     this.props.postFeedback();
   }
 
@@ -48,7 +48,7 @@ class App extends Component {
   }
 
   onImageDrop = (acceptedFiles, rejectedFiles) => {
-    if (this.props.uploading) { return }
+    if (this.props.uploading || this.props.loading) { return }
     console.log(acceptedFiles)
     console.log(rejectedFiles)
 
@@ -84,6 +84,18 @@ class App extends Component {
           return (
           <div>
             {this.props.synonyms != null && this.props.synonyms.length > 0 ? <SuggestionBar style={appStyles.suggestionBar} synonyms={this.props.synonyms} onClick={(synonym) => this.onSynonymClick(synonym)}/> : null}
+            {this.props.uploadPrompt === true ? 
+              <div style={appStyles.uploadPromptContaner}>
+                {this.props.uploadError == null
+                  ? <div><Typography style={appStyles.successText}>Oops! This word is unfamiliar :(</Typography>
+                    <Typography style={appStyles.successText}>Please, provide an example image of what you are looking for.</Typography></div>
+                  : <Typography style={appStyles.errorText}>{this.props.uploadError.message}</Typography>}
+                <DropZoneComponent disabled={this.props.uploading || this.props.loading} style={appStyles.dropZoneContainer} base64image={this.props.dropzoneDisplayBase64image} onDrop={this.onImageDrop.bind(this)} />
+                {this.props.uploading ? <CircularProgress thickness={3} size={40} style={appStyles.uploadProgress} />
+                  : <Button disabled={this.props.dropzoneDisplayBase64image == null} raised style={this.props.dropzoneDisplayBase64image == null ? appStyles.submitButtonDisabled : appStyles.submitButton} onClick={event => this.onUploadClicked(event)}>Upload</Button>}
+                <Typography style={appStyles.successText}>Or browse through random images</Typography>
+              </div>
+              : null}
             <div style={appStyles.imageGrid}>
               <ResizeAware 
                 onResize={({width}) => this.props.screenWidthChanged(width)}>
@@ -105,19 +117,6 @@ class App extends Component {
           </div>
           );
         } else {
-          if (this.props.uploadPrompt === true) {
-            return(
-              <div style={appStyles.uploadPromptContaner}>
-                {this.props.uploadError == null 
-                ? <div><Typography style={appStyles.successText}>Oops! This word is unfamiliar :(</Typography>
-                  <Typography style={appStyles.successText}>Please, provide an example image of what you are looking for.</Typography></div>
-                  : <Typography style={appStyles.errorText}>{this.props.uploadError.message}</Typography>}
-                <DropZoneComponent disabled={this.props.uploading} style={appStyles.dropZoneContainer} base64image={this.props.dropzoneDisplayBase64image} onDrop={this.onImageDrop.bind(this)} />
-                {this.props.uploading ? <CircularProgress thickness={3} size={40} style={appStyles.uploadProgress} />
-                  : <Button disabled={this.props.dropzoneDisplayBase64image == null} raised style={this.props.dropzoneDisplayBase64image == null ? appStyles.submitButtonDisabled : appStyles.submitButton} onClick={event => this.onUploadClicked(event)}>Upload</Button>}
-              </div>
-            )
-          }
           if (this.props.error){
             return (
               <div style={appStyles.progressContainer}>
@@ -165,14 +164,13 @@ const appStyles = {
     marginTop: 12
   },
   imageGrid: { 
-    marginTop: 7
+    marginTop: 12
   },
   uploadPromptContaner: {
-    top: '20%',
     margin: 'auto',
+    marginTop: 12,
     display: 'flex',
     justifyContent: 'center',
-    position: 'absolute',
     alignItems: 'center',
     flexDirection: 'column',
     width: '100%',

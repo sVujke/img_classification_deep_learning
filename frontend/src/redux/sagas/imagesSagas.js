@@ -50,19 +50,7 @@ export function* requestImages(action) {
             action.payload.query
         );
         if (result.status === 200) {
-            const {
-                images,
-                step,
-                synonyms,
-                uploadRequired
-            } = result.data
-            if (uploadRequired != null) {
-                yield put(getImagesFailure(null))
-                yield put(promptImageUpload(true))
-            } else {
-                yield put(getImagesSuccess(wrapImages(images), step));
-                yield put(synonymsUpdated(synonyms))
-            }
+            yield handleResultOk(result.data)
         }
         else {
             yield put(getImagesFailure(result.error));
@@ -89,7 +77,7 @@ export function* postFeedback() {
             data
         );
         if (result.status === 200) {
-            yield put(getImagesSuccess(wrapImages(result.data.images), result.data.step));
+            yield handleResultOk(result.data)
         }
         else {
             yield put(postFeedbackFailure(result.error));
@@ -97,6 +85,19 @@ export function* postFeedback() {
     } catch (error) {
         yield put(postFeedbackFailure(error));
     }
+}
+
+function* handleResultOk(obj) {
+    const {
+        images,
+        step,
+        synonyms,
+        uploadRequired
+    } = obj
+    var upReq = uploadRequired != null && uploadRequired
+    yield put(promptImageUpload(upReq))
+    yield put(getImagesSuccess(wrapImages(images), step));
+    yield put(synonymsUpdated(synonyms))
 }
 
 export default function* root() {
