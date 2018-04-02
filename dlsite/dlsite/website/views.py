@@ -82,7 +82,7 @@ def load_images_list():
     return images_titles
 
 
-def keyword_exists(k):
+def keyword_has_been_learned(k):
     """Check if keyword have been searched before
 
     :param k: string, search keyword
@@ -100,16 +100,26 @@ class SearchView(APIView):
         self.feedback_parser = FeedbackParser()
         self.search_history = SearchHistory()
 
-    def format_response(self, query, step, images):
+    @staticmethod
+    def format_response(query, step, images, synonyms=list()):
+        """
+
+        :param query: str
+        :param step: int
+        :param images: list
+        :param synonyms: list
+        :return:
+        """
         return {
             "step": step,
             "query": query,
             "images": [path_to_image_frontend(img) for img in images],
             "ok": True,
-            "synonyms": ["test", "synonym", "hello", "test2", "test3", "test4", "end test"]
+            "synonyms": synonyms
         }
 
-    def prompt_image_upload(self):
+    @staticmethod
+    def prompt_image_upload():
         return {
             "ok": True,
             "uploadRequired": True
@@ -128,10 +138,6 @@ class SearchView(APIView):
 
             query = query.lower().strip()
             print("Search for", query)
-            if( query in vocabs):
-                images =  list(inverted_index.loc[query].image.values())[:20]
-                print("results are ", images)
-                return Response(self.format_response(query, 0, images))
             print("STEP:", self.feedback_parser.get_step(query))
 
             print("NUMBER OF SEARCHES: ",
@@ -141,7 +147,7 @@ class SearchView(APIView):
             print("NUMBER OF SEARCHES: ",
                   self.search_history.get_number_of_searches(query))
 
-            if keyword_exists(query):
+            if keyword_has_been_learned(query):
                 print("Keyword exists")
                 images = relevant_images_based_on_feedback(
                     query, self.feedback_parser.df_feedback)
@@ -150,22 +156,26 @@ class SearchView(APIView):
                 return Response(self.format_response(query, 0, images))
 
             else:
-                print("SHOW known_words")
-                print(known_words.keys()[:10])
-
-                temp_res = known_words.get(query)
-                if temp_res:
-                    print("USE KNOWN WORDS")
-                    temp_res = sorted(
-                        temp_res, key=lambda x: x[1], reverse=True)
-                    _imgs = []
-                    for img, score in temp_res:
-                        _imgs.append(img)
-
-                    print("GET SIMILAR IMAGES")
-                    similar_images = similar_images_filter_negative_feedback(query, _imgs[:10],
-                                                                             self.feedback_parser.df_feedback, 20)
-                    return Response(self.format_response(query, 0, similar_images))
+                # print("SHOW known_words")
+                # print(known_words.keys()[:10])
+                #
+                # temp_res = known_words.get(query)
+                # if temp_res:
+                #     print("USE KNOWN WORDS")
+                #     temp_res = sorted(
+                #         temp_res, key=lambda x: x[1], reverse=True)
+                #     _imgs = []
+                #     for img, score in temp_res:
+                #         _imgs.append(img)
+                #
+                #     print("GET SIMILAR IMAGES")
+                #     similar_images = similar_images_filter_negative_feedback(query, _imgs[:10],
+                #                                                              self.feedback_parser.df_feedback, 20)
+                #     return Response(self.format_response(query, 0, similar_images))
+                if query in vocabs:
+                    images = list(inverted_index.loc[query].image.values())[:20]
+                    print("results are ", images)
+                    return Response(self.format_response(query, 0, images))
                 else:
                     return Response(self.prompt_image_upload())
 
@@ -259,9 +269,9 @@ class SearchView(APIView):
             n = gc.collect()
 
             # this is for igor test
-            # vector = get_ol_vector(inception_object, img)
+            vector = get_ol_vector(inception_object, img)
             # this is transfer layer
-            vector = get_tl_vector(inception_object, img)
+            # vector = get_tl_vector(inception_object, img)
 
             similar_img_indexes = annoy_index.get_nns_by_vector(vector, n=50)
             print("SIM indexes:", similar_img_indexes)
