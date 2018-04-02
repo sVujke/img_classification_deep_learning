@@ -11,7 +11,7 @@ from search_history import SearchHistory
 from collections import defaultdict
 from os import listdir, curdir, path
 from .models import Image, Keyword, Statistics, ClfModel, Label, ClusterModel, ImageCluster
-
+import gensim
 import pandas as pd
 from recommend import relevant_images_based_on_feedback, random_images, similar_images_filter_negative_feedback
 from reverse_img_query import load_data_np, \
@@ -31,16 +31,23 @@ from utils import image_from_base64str
 
 maybe_download()
 inception_layer_path = path_to_static() + "inception_output_layer2"
+inverted_index_path = path_to_static() + "inverted_index"
+vocab_path = path_to_static() + "vocab.csv"
+word2vec_vocab_path = path_to_static() + "word2vecvocab.csv"
+word_vec_path = path_to_static() + "GoogleNews-vectors-negative300.bin.gz"
 print("READ inception_layer_path")
+inverted_index = pd.read_pickle(inverted_index_path)
 df_in = pd.read_pickle(inception_layer_path)
 df_in.columns = ['img', 'output_layer', 'scores']
-print("DROP column - output_layer")
+# print("DROP column - output_layer")
 df_in.drop('output_layer', axis=1, inplace=True)
-print(df_in.head())
+# print(df_in.head())
 known_words = defaultdict(list)
 annoy_index = None
 inception_object = None
-
+vocabs = list(pd.read_csv(vocab_path).vocab)
+word2vec_vocab = list(pd.read_csv(word2vec_vocab_path)["word2vec"])
+word2vec = gensim.models.KeyedVectors.load_word2vec_format(word_vec_path, binary=True,  limit=50000)
 
 def prepare_known_words():
     global df_in, known_words
@@ -51,18 +58,16 @@ def prepare_known_words():
         img_title = row['img']
         descriptions_list = row['scores'].items()
         for d, score in descriptions_list:
-            for word in d.split(' '):
-                word = word.replace(",", "")
-                known_words[word].append((img_title, score))
+            known_words[str(d)].append((img_title, score))
 
     print('==================== known_words', len(known_words))
     print("del df_in")
     del df_in
     print("done")
+print(word2vec_vocab)
 
-
-prepare_known_words()
-
+# prepare_known_words()
+# print(known_words)
 
 def index(request):
     # images_list = Image.objects.all()
@@ -78,7 +83,7 @@ def load_images_list():
     return images_titles
 
 
-def keyword_exists(k):
+def keyword_has_been_learned(k):
     """Check if keyword have been searched before
 
     :param k: string, search keyword
@@ -96,16 +101,16 @@ class SearchView(APIView):
         self.feedback_parser = FeedbackParser()
         self.search_history = SearchHistory()
 
+    @staticmethod
     def format_response(self, query, step, images, synonyms=list(), prompt_upload=False):
         return {
             "step": step,
             "query": query,
             "images": [path_to_image_frontend(img) for img in images],
             "ok": True,
-            "synonyms": ["test", "synonym", "hello", "test2", "test3", "test4", "end test"],
+            "synonyms": synonyms,
             "uploadRequired": prompt_upload
         }
-
 
     def get(self, request):
 
@@ -120,7 +125,6 @@ class SearchView(APIView):
 
             query = query.lower().strip()
             print("Search for", query)
-
             print("STEP:", self.feedback_parser.get_step(query))
 
             print("NUMBER OF SEARCHES: ",
@@ -130,7 +134,7 @@ class SearchView(APIView):
             print("NUMBER OF SEARCHES: ",
                   self.search_history.get_number_of_searches(query))
 
-            if keyword_exists(query):
+            if keyword_has_been_learned(query):
                 print("Keyword exists")
                 images = relevant_images_based_on_feedback(
                     query, self.feedback_parser.df_feedback)
@@ -139,22 +143,39 @@ class SearchView(APIView):
                 return Response(self.format_response(query, 0, images))
 
             else:
-                print("SHOW known_words")
-                print(known_words.keys()[:10])
-
-                temp_res = known_words.get(query)
-                if temp_res:
-                    print("USE KNOWN WORDS")
-                    temp_res = sorted(
-                        temp_res, key=lambda x: x[1], reverse=True)
-                    _imgs = []
-                    for img, score in temp_res:
-                        _imgs.append(img)
-
-                    print("GET SIMILAR IMAGES")
-                    similar_images = similar_images_filter_negative_feedback(query, _imgs[:10],
-                                                                             self.feedback_parser.df_feedback, 20)
-                    return Response(self.format_response(query, 0, similar_images))
+                # print("SHOW known_words")
+                # print(known_words.keys()[:10])
+                #
+                # temp_res = known_words.get(query)
+                # if temp_res:
+                #     print("USE KNOWN WORDS")
+                #     temp_res = sorted(
+                #         temp_res, key=lambda x: x[1], reverse=True)
+                #     _imgs = []
+                #     for img, score in temp_res:
+                #         _imgs.append(img)
+                #
+                #     print("GET SIMILAR IMAGES")
+                #     similar_images = similar_images_filter_negative_feedback(query, _imgs[:10],
+                #                                                              self.feedback_parser.df_feedback, 20)
+                #     return Response(self.format_response(query, 0, similar_images))
+                if query in vocabs:
+                    images = sorted(inverted_index.loc[query].image.items(), key=lambda x: x[0], reverse = True)[:100]
+                    images = [val[1] for val in images]
+                    # images = list(inverted_index.loc[query].image.values())[:20]
+                    print("\n\nresults are from imagenet\n\n==", images)
+                    return Response(self.format_response(query, 0, images))
+                if query in word2vec.vocab:
+                    nwords = [val[0].lower() for val in word2vec.most_similar(query, topn=6)]
+                    if query in nwords:
+                        nwords.remove(query)
+                    for word in nwords:
+                        if word in vocabs:
+                            images = sorted(inverted_index.loc[word].image.items(), key=lambda x: x[0], reverse = True)[:100]
+                            images = [val[1] for val in images]
+                            return Response(self.format_response(word, 0, images, nwords))
+                    images = random_images(20)
+                    return Response(self.format_response(query, 0, images, nwords))
                 else:
                     images = random_images(20)
                     return Response(self.format_response(query, 0, images, prompt_upload=True))
@@ -249,9 +270,9 @@ class SearchView(APIView):
             n = gc.collect()
 
             # this is for igor test
-            # vector = get_ol_vector(inception_object, img)
+            vector = get_ol_vector(inception_object, img)
             # this is transfer layer
-            vector = get_tl_vector(inception_object, img)
+            # vector = get_tl_vector(inception_object, img)
 
             similar_img_indexes = annoy_index.get_nns_by_vector(vector, n=52)
             print("SIM indexes:", similar_img_indexes)
