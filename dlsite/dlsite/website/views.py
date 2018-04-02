@@ -47,7 +47,7 @@ annoy_index = None
 inception_object = None
 vocabs = list(pd.read_csv(vocab_path).vocab)
 word2vec_vocab = list(pd.read_csv(word2vec_vocab_path)["word2vec"])
-word2vec = gensim.models.KeyedVectors.load_word2vec_format(word_vec_path, binary=True)
+word2vec = gensim.models.KeyedVectors.load_word2vec_format(word_vec_path, binary=True,  limit=50000)
 
 def prepare_known_words():
     global df_in, known_words
@@ -64,7 +64,7 @@ def prepare_known_words():
     print("del df_in")
     del df_in
     print("done")
-
+print(word2vec_vocab)
 
 # prepare_known_words()
 # print(known_words)
@@ -174,15 +174,22 @@ class SearchView(APIView):
                 #                                                              self.feedback_parser.df_feedback, 20)
                 #     return Response(self.format_response(query, 0, similar_images))
                 if query in vocabs:
-                    images = list(inverted_index.loc[query].image.values())[:20]
-                    print("results are ", images)
+                    images = sorted(inverted_index.loc[query].image.items(), key=lambda x: x[0], reverse = True)[:100]
+                    images = [val[1] for val in images]
+                    # images = list(inverted_index.loc[query].image.values())[:20]
+                    print("\n\nresults are from imagenet\n\n==", images)
                     return Response(self.format_response(query, 0, images))
-                if query in word2vec_vocab:
-                    word2vec_vocab.remove(query)
-                    nquery = str(word2vec.most_similar_to_given(query, word2vec_vocab))
-                    print("word 2 vec", nquery)
-                    word2vec_vocab.append(query)
-                    return Response(self.format_response(nquery, 0, images))
+                if query in word2vec.vocab:
+                    nwords = [val[0].lower() for val in word2vec.most_similar(query, topn=6)]
+                    if query in nwords:
+                        nwords.remove(query)
+                    for word in nwords:
+                        if word in vocabs:
+                            images = sorted(inverted_index.loc[word].image.items(), key=lambda x: x[0], reverse = True)[:100]
+                            images = [val[1] for val in images]
+                            return Response(self.format_response(word, 0, images, nwords))
+                    images = random_images(20)
+                    return Response(self.format_response(query, 0, images, nwords))
                 else:
                     return Response(self.prompt_image_upload())
 
