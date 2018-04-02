@@ -120,6 +120,17 @@ def relevant_images_based_on_feedback(query,
                                       threshold_steps=3,
                                       lower_threshold=0.125):
 
+    """
+
+    :param query:
+    :param df_feedback:
+    :param count:
+    :param upper_threshold:
+    :param threshold_steps:
+    :param lower_threshold:
+    :return: relevant images or None if there were none
+    """
+
     ratio_df = __unique_image_ratio_df(query, df_feedback)
     negative_ratio_list = ratio_df.loc[ratio_df['ratio'] < -2]['image'].tolist()  # TODO: CHange when we have show more
 
