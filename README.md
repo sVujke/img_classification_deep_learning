@@ -4,11 +4,35 @@ This repository is a result of the Deep Learning Research Lab at the [University
 
 ## The Problem
 
+The goal of our project was to develop an image retrieval system by using Deep Learning, Machine Learning and other compatible methods. The search engine in question needs to be able to retrieve corresponding images for the searched keyword. We assume that:
+* The user is searching for an object in the represented in the image.
+* The search engine has the functionality of learning new queries through user feedback on returned results or through an inverse image query. 
+* The user feedback is also taken into account for ranking the results.
+* The search engine will not have any given metadata describing the content of the images. 
+* The search engine should be able to support further extending of the image dataset. 
+* Images need to be ranked based on relevance that the users have expressed through giving feedback
+* We were given a set of unlabeled X images, a machine with 16 GB RAM and a 8 core CPU. 
+
+
 ## Approach
 
 For the frontend the ReactJS framework is used.
 
 ## Software and Hardware
+
+## Examples of use
+
+### Retrieval Scenario - When the query term is known
+
+[![IMAGE ALT TEXT HERE](https://www.youtube.com/yt/about/media/images/brand-resources/icons/YouTube-icon-our_icon.png)](https://www.youtube.com/watch?v=llYrKU2tgbs&index=1&list=PLRNgM8Xk6PKbFOFw0H5OG_injSrKnher4)
+
+### Retrieval Scenario - When the query term is known
+
+[![IMAGE ALT TEXT HERE](https://www.youtube.com/yt/about/media/images/brand-resources/icons/YouTube-icon-our_icon.png)](https://www.youtube.com/watch?v=hqq2XkGp4Rc&list=PLRNgM8Xk6PKbFOFw0H5OG_injSrKnher4&index=4)
+
+### Retrieval Scenario - The reverse image query
+
+[![IMAGE ALT TEXT HERE](https://www.youtube.com/yt/about/media/images/brand-resources/icons/YouTube-icon-our_icon.png)](https://www.youtube.com/watch?v=pOYEjNEySpU&index=3&list=PLRNgM8Xk6PKbFOFw0H5OG_injSrKnher4)
 
 ## Results
 
