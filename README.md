@@ -16,7 +16,7 @@ The goal of our project was to develop an image retrieval system by using Deep L
 
 ## Approach
 
-For generating a vector representation of images we use the Inception/GoogLeNet Model. The output layer 
+For generating a vector representation of images we use the [Inception/GoogLeNet Model](https://www.tensorflow.org/tutorials/image_recognition). The output layer 
 classfies the images into the 1000 ImageNet classes. The transfer Layer is a vector with 2048 describing 
 each image. 
 
@@ -31,13 +31,13 @@ The web application has an architecture splited into client and server, which ar
 
 ## Software and Hardware
 
-For extracting layers of the neural network, we used TensorFlow, as Inception is included within the Model Zoo. 
+For extracting layers of the neural network, we used [TensorFlow](https://www.tensorflow.org/), as Inception is included within the Model Zoo. 
 
-For the KNN algorithm, we used the sckit-learn implementation, and for the ANN we used annoy. 
+For the KNN algorithm, we used the [sckit-learn implementation](http://scikit-learn.org/stable/modules/neighbors.html), and for the ANN we used [annoy](https://github.com/spotify/annoy). 
 
 ADD: Word2Vec library details  
 
-For the frontend (client) we used the ReactJS framework, and for the backend (server) we used Django
+For the frontend (client) we used the [ReactJS framework](https://reactjs.org/), and for the backend (server) we used [Django](https://www.djangoproject.com/)
 
 Hardware - Development and testing was done on a machine with 16 GB RAM and a 8 core CPU. 
 
