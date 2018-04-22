@@ -57,6 +57,37 @@ Hardware - Development and testing was done on a machine with 16 GB RAM and a 8 
 
 ## Results
 
+### Image similarity
+
+For presenting similar images, we compute a neighborhod query. This computation can be done on different NN layers and using different 
+distance measures. We decided to compare performance between the Transfer and the Output layer, over three different distance measures - Cosine, Euclidean, Manhattan. The best performing combination is shown in bold fonts. 
+
+NN Layer and Distance Measure | p@5 | p@10 | p@20 |
+--- | --- | --- | --- |
+Transfer and Manhattan | **60.7%** | 55.8% | **46.1%** |
+Transfer Euclidean | 59.9% | **57.0%** | 45.6% |
+Transfer Cosine | 60.1% | 50.8% | 40.6% |
+Output Manhattan | 50.4% | 47.5% | 44.9% |
+Output Euclidean | 48.2% | 43.8% | 43.3% |
+Output Cosine | 49.4% | 48.3% | 45.6% |
+
+**NOTE** In this case, the p in p@n stands for a **modified precision** where the examinee rates how similar an image is on the scale 0-4. 
+
+### Comparison of KNN and ANN 
+
+We wanted to compare performance of the two algorithms on large vectors (2048). Although KNN is much more precise, ANN is significantly 
+faster.
+
+Algorithm | p@5 | p@10 | p@20 |
+--- | --- | --- | --- |
+KNN | **60.7%** | 55.8% | **46.1%** |
+ANN (20 trees) | 59.9% | **57.0%** | 45.6% |
+
+### Overal System Performance
+
+In case of running queries corresponding to the terms from ImageNet classes the **p@20 was 90%** when this query is submitted for the first time (the user has not given any feedback yet).
+In case of running queries for unknown terms, counting from the first occurrence of a relevant image/s corresponding to the submitted query, the system needs on average 6 feedback rounds submitted by the user in order to reach **p@20 of 75%**.
+
 ## Tech details
 
 To run the React app:
