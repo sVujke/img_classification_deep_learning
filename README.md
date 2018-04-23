@@ -11,7 +11,7 @@ The goal of our project was to develop an image retrieval system by using Deep L
 * The search engine will not have any given metadata describing the content of the images. 
 * The search engine should be able to support further extending of the image dataset. 
 * Images need to be ranked based on relevance that the users have expressed through giving feedback
-* We were given a set of unlabeled X images, a machine with 16 GB RAM and a 8 core CPU. 
+* We were given a set of unlabeled X images
 
 
 ## Approach
@@ -126,3 +126,11 @@ python compute_distances.py [features_path] [output_dir_path] [distance_metric] 
 Scripts uses vectors from output layer of the CNN for each image in the file specified with **features_path** to find top **n_neighbors** with the specified **distance_metric**. The neighbors and distances are stored in two separate files in the **output_dir_path**
 This script copies fiels from **path_copy** to **path_paste**. The files are specified in the **filter.csv** file. An optional parameter is the parameters for the **n_cores** to be used, value -1 means all cores are to be used, by default the value is 4. 
 
+## Authors
+
+@sVujke - Stefan Vujovic
+@t0a0 - Igor Fedotov
+@utegulovalmat - Almat Utegulov
+@vamshi-7 - Bandla Vamshi
+@shohelahamad - Shohel Ahmad
+@aelkindy - Abudllah El Kindy 
