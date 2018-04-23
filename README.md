@@ -128,9 +128,9 @@ This script copies fiels from **path_copy** to **path_paste**. The files are spe
 
 ## Authors
 
-@sVujke - Stefan Vujovic
-@t0a0 - Igor Fedotov
-@utegulovalmat - Almat Utegulov
-@vamshi-7 - Bandla Vamshi
-@shohelahamad - Shohel Ahmad
-@aelkindy - Abudllah El Kindy 
+* @sVujke - Stefan Vujovic
+* @t0a0 - Igor Fedotov
+* @utegulovalmat - Almat Utegulov
+* @vamshi-7 - Bandla Vamshi
+* @shohelahamad - Shohel Ahmad
+* @aelkindy - Abudllah El Kindy 
